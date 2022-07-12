@@ -1,12 +1,12 @@
 {
   "name": "EOSIO Javascript",
-  "entryPoints": ["./src/*.*"],
+  "entryPoints": ["./src/index.ts"],
   "excludeProtected": true,
   "excludePrivate": true,
   "externalPattern": "**/node_modules/**",
   "out": "typedoc-out",
   "theme": "default",
-  "exclude": ["**/index*","**/*.test.ts","**/*.test.js","**/node_modules/"],
+  "exclude": ["**/*.test.ts","**/*.test.js","**/node_modules/"],
   "readme": "README.md",
   "hideGenerator": true,
   "gitRemote": "https://github.com/eosnetworkfoundation/mandel-eosjs"
