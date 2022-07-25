@@ -1,19 +1,13 @@
 {
-  "name": "eosjs",
-  "target": "es5",
-  "module": ["es2017","dom"],
-  "ignoreCompilerErrors": true,
-  "includeDeclarations": false,
+  "name": "EOSIO Javascript",
+  "entryPoints": ["./src/index.ts"],
   "excludeProtected": true,
   "excludePrivate": true,
-  "mode": "modules",
-  "out": "docs-build",
-  "theme": "markdown",
-  "mdEngine": "gitbook",
-  "stripExternal": false,
-  "exclude": ["**/index*","**/*.test.ts"],
+  "externalPattern": "**/node_modules/**",
+  "out": "typedoc-out",
+  "theme": "default",
+  "exclude": ["**/*.test.ts","**/*.test.js","**/node_modules/"],
   "readme": "README.md",
-  "hideGenerator": "true",
-  "verbose": true,
-  "mdSourceRepo": "https://www.github.com/EOSIO/eosjs"
+  "hideGenerator": true,
+  "gitRemote": "https://github.com/eosnetworkfoundation/mandel-eosjs"
 }
