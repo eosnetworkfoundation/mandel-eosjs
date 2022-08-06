@@ -106,7 +106,29 @@ const transactWithRetry = async () => await api.transact({
     broadcast: false,
     blocksBehind: 3,
     expireSeconds: 30,
-    retryTrx: true
+    retryTrxNumBlocks: 10
+});
+    
+const transactWithRetryIrreversible = async () => await api.transact({
+  actions: [{
+        account: 'eosio.token',
+        name: 'transfer',
+        authorization: [{
+            actor: 'bob',
+            permission: 'active',
+        }],
+        data: {
+            from: 'bob',
+            to: 'alice',
+            quantity: '0.0001 SYS',
+            memo: '',
+        },
+    }]
+}, {
+    broadcast: false,
+    blocksBehind: 3,
+    expireSeconds: 30,
+    retryIrreversible: true
 });
 
 const broadcastResult = async (signaturesAndPackedTransaction) => await api.pushSignedTransaction(signaturesAndPackedTransaction);
@@ -135,6 +157,7 @@ module.exports = {
     transactWithoutConfig,
     transactWithoutBroadcast,
     transactWithRetry,
+    transactWithRetryIrreversible,
     broadcastResult,
     transactShouldFail,
     rpcShouldFail

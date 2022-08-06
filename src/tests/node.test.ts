@@ -33,6 +33,12 @@ describe('Node JS environment', () => {
         expect(Object.keys(transactionResponse)).toContain('transaction_id');
     });
 
+    it('retry transaction irreversible', async () => {
+        transactionSignatures = await tests.transactWithRetryIrreversible();
+        transactionResponse = await tests.broadcastResult(transactionSignatures);
+        expect(Object.keys(transactionResponse)).toContain('transaction_id');
+    });
+
     it('throws appropriate error message without configuration object or TAPOS in place', async () => {
         try {
             failedAsPlanned = true;
