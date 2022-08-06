@@ -5,7 +5,7 @@
 
 import { AbiProvider, AuthorityProvider, BinaryAbi, CachedAbi, SignatureProvider } from './eosjs-api-interfaces';
 import { JsonRpc } from './eosjs-jsonrpc';
-import { Abi, GetInfoResult, PushTransactionArgs } from './eosjs-rpc-interfaces';
+import { Abi, GetInfoResult, PushTransactionArgs, SendTransaction2Args } from './eosjs-rpc-interfaces';
 import * as ser from './eosjs-serialize';
 
 const abiAbi = require('../src/abi.abi.json');
@@ -223,18 +223,42 @@ export class Api {
      * Named Parameters:
      *    * `broadcast`: broadcast this transaction?
      *    * `sign`: sign this transaction?
+     *    * `retryTrx`: retry this transaction?
+     *    * `returnFailureTrace`: return failure trace for this transaction?
+     *    * `retryTrxNumBlocks`: retry trx for X blocks, 0 for irreversible?
      *    * If both `blocksBehind` and `expireSeconds` are present,
      *      then fetch the block which is `blocksBehind` behind head block,
      *      use it as a reference for TAPoS, and expire the transaction `expireSeconds` after that block's time.
      * @returns node response if `broadcast`, `{signatures, serializedTransaction}` if `!broadcast`
      */
-    public async transact(transaction: any, { broadcast = true, sign = true, blocksBehind, expireSeconds }:
-        { broadcast?: boolean; sign?: boolean; blocksBehind?: number; expireSeconds?: number; } = {}): Promise<any> {
+    public async transact(transaction: any, { 
+            broadcast = true, 
+            sign = true, 
+            blocksBehind, 
+            expireSeconds,
+            returnFailureTrace = false,
+            retryTrx = false,
+            retryTrxNumBlocks = 30
+        }:
+        { 
+            broadcast?: boolean; 
+            sign?: boolean; 
+            blocksBehind?: number; 
+            expireSeconds?: number; 
+            returnFailureTrace?: boolean;
+            retryTrx?: boolean;
+            retryTrxNumBlocks?: number;
+        } = {}
+    ): Promise<any> {
         let info: GetInfoResult;
 
         if (!this.chainId) {
             info = await this.rpc.get_info();
             this.chainId = info.chain_id;
+        }
+
+        if(retryTrx && info.server_version_string < "v3.1.0") {
+            throw new Error(`Retry transaction feature unavailable for nodeos :${info.server_version_string}`);
         }
 
         if (typeof blocksBehind === 'number' && expireSeconds) { // use config fields to generate TAPOS if they exist
@@ -273,6 +297,14 @@ export class Api {
             });
         }
         if (broadcast) {
+            if(retryTrx) {
+                return this.sendSignedTransaction2({
+                    return_failure_trace: returnFailureTrace, 
+                    retry_trx: retryTrx, 
+                    retry_trx_num_blocks: retryTrxNumBlocks, 
+                    transaction: pushTransactionArgs
+                });
+            }
             return this.pushSignedTransaction(pushTransactionArgs);
         }
         return pushTransactionArgs;
@@ -286,6 +318,27 @@ export class Api {
             signatures,
             serializedTransaction,
             serializedContextFreeData
+        });
+    }
+
+    /** Broadcast a signed transaction2 */
+    public async sendSignedTransaction2(
+        { 
+            return_failure_trace, 
+            retry_trx, 
+            retry_trx_num_blocks, 
+            transaction: { signatures, serializedTransaction, serializedContextFreeData } 
+        }: SendTransaction2Args
+    ): Promise<any> {
+        return this.rpc.send_transaction2({
+            return_failure_trace, 
+            retry_trx, 
+            retry_trx_num_blocks, 
+            transaction: {
+                signatures,
+                serializedTransaction,
+                serializedContextFreeData
+            }
         });
     }
 
