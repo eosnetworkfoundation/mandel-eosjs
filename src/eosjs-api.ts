@@ -225,9 +225,9 @@ export class Api {
      *    * `sign`: sign this transaction?
      *    * `useOldRPC`: use old RPC push_transaction, rather than new RPC send_transaction
      *    * `useOldSendRPC`: use old RPC /v1/chain/send_transaction, rather than new RPC /v1/chain/send_transaction2
-     *    * `retryTrx`: retry this transaction?
-     *    * `returnFailureTrace`: return failure trace for this transaction?
-     *    * `retryTrxNumBlocks`: retry trx for X blocks, 0 for irreversible?
+     *    * `returnFailureTrace`: return partial traces on failed transactions?
+     *    * `retryTrxNumBlocks`: request node to retry transaction until in a block of given height, blocking call?
+     *    * `retryIrreversible`: request node to retry transaction until it is irreversible or expires, blocking call?
      *    * If both `blocksBehind` and `expireSeconds` are present,
      *      then fetch the block which is `blocksBehind` behind head block,
      *      use it as a reference for TAPoS, and expire the transaction `expireSeconds` after that block's time.
@@ -241,8 +241,8 @@ export class Api {
             useOldRPC = false,
             useOldSendRPC = false,
             returnFailureTrace = false,
-            retryTrx = false,
-            retryTrxNumBlocks = 30
+            retryTrxNumBlocks = 0,
+            retryIrreversible = false
         }:
         { 
             broadcast?: boolean; 
@@ -252,8 +252,8 @@ export class Api {
             useOldRPC?: boolean; 
             useOldSendRPC?: boolean; 
             returnFailureTrace?: boolean;
-            retryTrx?: boolean;
             retryTrxNumBlocks?: number;
+            retryIrreversible?: boolean;
         } = {}
     ): Promise<any> {
         let info: GetInfoResult;
@@ -263,12 +263,17 @@ export class Api {
             this.chainId = info.chain_id;
         }
 
-        if(retryTrx) {
+        const isRetry = retryIrreversible || retryTrxNumBlocks > 0;
+
+        if(isRetry) {
             if(info.server_version_string < "v3.1.0") {
                 throw new Error(`Retry transaction feature unavailable for nodeos :${info.server_version_string}`);
             }
             if (useOldRPC || useOldSendRPC) {
                 throw new Error('Retry transaction feature not compatible with old RPC');
+            }
+            if(retryIrreversible && retryTrxNumBlocks > 0) {
+                throw new Error('Must specify retry irreversible or until given block height');
             }
         }
 
@@ -308,13 +313,19 @@ export class Api {
             });
         }
         if (broadcast) {
-            if(retryTrx) {
-                return this.sendSignedTransaction2({
+            if(isRetry) {
+                let params: SendTransaction2Args = {
                     return_failure_trace: returnFailureTrace, 
-                    retry_trx: retryTrx, 
-                    retry_trx_num_blocks: retryTrxNumBlocks, 
+                    retry_trx: true,
                     transaction: pushTransactionArgs
-                });
+                }
+                if(retryTrxNumBlocks > 0) {
+                    params = {
+                        ...params,
+                        retry_trx_num_blocks: retryTrxNumBlocks
+                    }
+                }
+                return this.sendSignedTransaction2(params);
             } else if(useOldSendRPC) {
                 return this.sendSignedTransaction(pushTransactionArgs);
             } else if(useOldRPC) {

@@ -133,6 +133,6 @@ export interface PushTransactionArgs {
 export interface SendTransaction2Args {
     return_failure_trace: boolean,
     retry_trx: boolean,
-    retry_trx_num_blocks: number,
+    retry_trx_num_blocks?: number,
     transaction: PushTransactionArgs
 }
