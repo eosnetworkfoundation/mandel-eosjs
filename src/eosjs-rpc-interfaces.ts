@@ -120,3 +120,11 @@ export interface PushTransactionArgs {
     serializedTransaction: Uint8Array;
     serializedContextFreeData?: Uint8Array;
 }
+
+/** Arguments for `send_transaction2` */
+export interface SendTransaction2Args {
+    return_failure_trace: boolean,
+    retry_trx: boolean,
+    retry_trx_num_blocks: number,
+    transaction: PushTransactionArgs
+}
