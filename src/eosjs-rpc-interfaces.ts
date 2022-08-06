@@ -105,6 +105,14 @@ export interface GetInfoResult {
     virtual_block_net_limit: number;
     block_cpu_limit: number;
     block_net_limit: number;
+    server_version_string: string;
+    fork_db_head_block_num: number,
+    fork_db_head_block_id: string,
+    server_full_version_string: string,
+    total_cpu_weight: string,
+    total_net_weight: string,
+    earliest_available_block_num: number,
+    last_irreversible_block_time: string
 }
 
 /** Return value of `/v1/chain/get_raw_code_and_abi` */
