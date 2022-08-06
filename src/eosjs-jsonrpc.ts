@@ -216,7 +216,8 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
     public async send_transaction2(
         { 
             return_failure_trace, 
-            retry_trx, retry_trx_num_blocks, 
+            retry_trx, 
+            retry_trx_num_blocks, 
             transaction: { signatures, serializedTransaction, serializedContextFreeData } 
         }: SendTransaction2Args
     ): Promise<any> {
