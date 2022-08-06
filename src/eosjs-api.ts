@@ -223,7 +223,8 @@ export class Api {
      * Named Parameters:
      *    * `broadcast`: broadcast this transaction?
      *    * `sign`: sign this transaction?
-     *    * `useOldSendRPC`: Use old RPC /v1/chain/send_transaction, rather than new RPC /v1/chain/send_transaction2
+     *    * `useOldRPC`: use old RPC push_transaction, rather than new RPC send_transaction
+     *    * `useOldSendRPC`: use old RPC /v1/chain/send_transaction, rather than new RPC /v1/chain/send_transaction2
      *    * `retryTrx`: retry this transaction?
      *    * `returnFailureTrace`: return failure trace for this transaction?
      *    * `retryTrxNumBlocks`: retry trx for X blocks, 0 for irreversible?
