@@ -223,6 +223,7 @@ export class Api {
      * Named Parameters:
      *    * `broadcast`: broadcast this transaction?
      *    * `sign`: sign this transaction?
+     *    * `useOldSendRPC`: Use old RPC /v1/chain/send_transaction, rather than new RPC /v1/chain/send_transaction2
      *    * `retryTrx`: retry this transaction?
      *    * `returnFailureTrace`: return failure trace for this transaction?
      *    * `retryTrxNumBlocks`: retry trx for X blocks, 0 for irreversible?
@@ -236,6 +237,8 @@ export class Api {
             sign = true, 
             blocksBehind, 
             expireSeconds,
+            useOldRPC = false,
+            useOldSendRPC = false,
             returnFailureTrace = false,
             retryTrx = false,
             retryTrxNumBlocks = 30
@@ -245,6 +248,8 @@ export class Api {
             sign?: boolean; 
             blocksBehind?: number; 
             expireSeconds?: number; 
+            useOldRPC?: boolean; 
+            useOldSendRPC?: boolean; 
             returnFailureTrace?: boolean;
             retryTrx?: boolean;
             retryTrxNumBlocks?: number;
@@ -257,8 +262,13 @@ export class Api {
             this.chainId = info.chain_id;
         }
 
-        if(retryTrx && info.server_version_string < "v3.1.0") {
-            throw new Error(`Retry transaction feature unavailable for nodeos :${info.server_version_string}`);
+        if(retryTrx) {
+            if(info.server_version_string < "v3.1.0") {
+                throw new Error(`Retry transaction feature unavailable for nodeos :${info.server_version_string}`);
+            }
+            if (useOldRPC || useOldSendRPC) {
+                throw new Error('Retry transaction feature not compatible with old RPC');
+            }
         }
 
         if (typeof blocksBehind === 'number' && expireSeconds) { // use config fields to generate TAPOS if they exist
@@ -304,13 +314,16 @@ export class Api {
                     retry_trx_num_blocks: retryTrxNumBlocks, 
                     transaction: pushTransactionArgs
                 });
+            } else if(useOldSendRPC) {
+                return this.sendSignedTransaction(pushTransactionArgs);
+            } else if(useOldRPC) {
+                return this.pushSignedTransaction(pushTransactionArgs);
             }
-            return this.pushSignedTransaction(pushTransactionArgs);
         }
         return pushTransactionArgs;
     }
 
-    /** Broadcast a signed transaction */
+    /** Broadcast a signed transaction using push_transaction RPC */
     public async pushSignedTransaction(
         { signatures, serializedTransaction, serializedContextFreeData }: PushTransactionArgs
     ): Promise<any> {
@@ -321,7 +334,18 @@ export class Api {
         });
     }
 
-    /** Broadcast a signed transaction2 */
+    /** Broadcast a signed transaction using send_transaction RPC */
+    public async sendSignedTransaction(
+        { signatures, serializedTransaction, serializedContextFreeData }: PushTransactionArgs
+    ): Promise<any> {
+        return this.rpc.send_transaction({
+            signatures,
+            serializedTransaction,
+            serializedContextFreeData
+        });
+    }
+
+    /** Broadcast a signed transaction using send_transaction2 RPC*/
     public async sendSignedTransaction2(
         { 
             return_failure_trace, 
