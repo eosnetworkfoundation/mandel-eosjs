@@ -240,7 +240,7 @@ export class Api {
             expireSeconds,
             useOldRPC = false,
             useOldSendRPC = false,
-            returnFailureTrace = false,
+            returnFailureTrace = true,
             retryTrxNumBlocks = 0,
             retryIrreversible = false
         }:
@@ -330,6 +330,12 @@ export class Api {
                 return this.sendSignedTransaction(pushTransactionArgs);
             } else if(useOldRPC) {
                 return this.pushSignedTransaction(pushTransactionArgs);
+            } else {
+                return this.sendSignedTransaction2({
+                    return_failure_trace: returnFailureTrace, 
+                    retry_trx: false,
+                    transaction: pushTransactionArgs
+                });
             }
         }
         return pushTransactionArgs;
