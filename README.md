@@ -112,8 +112,7 @@ With the introduction of Mandel v3.1 the retry transaction feature also adds 5 n
     }]
   }, {
     blocksBehind: 3,
-    expireSeconds: 30,
-    retryTrxNumBlocks: 30
+    expireSeconds: 30
   });
   console.dir(result);
 })();
