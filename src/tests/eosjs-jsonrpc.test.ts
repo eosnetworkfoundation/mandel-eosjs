@@ -606,6 +606,92 @@ describe('JSON RPC', () => {
         expect(fetch).toBeCalledWith(endpoint + expPath, expParams);
     });
 
+    it('calls send_transaction2 irreversible', async () => {
+        const expPath = '/v1/chain/send_transaction2';
+        const signatures = [
+            'George Washington',
+            'John Hancock',
+            'Abraham Lincoln',
+        ];
+        const serializedTransaction = new Uint8Array([
+            0, 16, 32, 128, 255,
+        ]);
+
+        const expReturn = { data: '12345' };
+        const callParams = {
+            return_failure_trace: false,
+            retry_trx: false,
+            transaction: {
+                signatures,
+                serializedTransaction,
+            }
+        };
+        const expParams = {
+            body: JSON.stringify({
+                return_failure_trace: false,
+                retry_trx: false,
+                transaction: {
+                    signatures,
+                    compression: 0,
+                    packed_context_free_data: '',
+                    packed_trx: '00102080ff',
+                }
+            }),
+            method: 'POST',
+        };
+
+        fetchMock.once(JSON.stringify(expReturn));
+
+        const response = await jsonRpc.send_transaction2(callParams);
+
+        expect(response).toEqual(expReturn);
+        expect(fetch).toBeCalledWith(endpoint + expPath, expParams);
+    });
+
+    it('calls send_transaction2 10 blocks', async () => {
+        const expPath = '/v1/chain/send_transaction2';
+        const signatures = [
+            'George Washington',
+            'John Hancock',
+            'Abraham Lincoln',
+        ];
+        const serializedTransaction = new Uint8Array([
+            0, 16, 32, 128, 255,
+        ]);
+
+        const expReturn = { data: '12345' };
+        const callParams = {
+            return_failure_trace: false,
+            retry_trx: false,
+            retry_trx_num_blocks: 10,
+            transaction: {
+                signatures,
+                serializedTransaction,
+            }
+        };
+        const expParams = {
+            body: JSON.stringify({
+                return_failure_trace: false,
+                retry_trx: false,
+                retry_trx_num_blocks: 10,
+                transaction: {
+                    signatures,
+                    compression: 0,
+                    packed_context_free_data: '',
+                    packed_trx: '00102080ff',
+                }
+            }),
+            method: 'POST',
+        };
+
+        fetchMock.once(JSON.stringify(expReturn));
+
+        const response = await jsonRpc.send_transaction2(callParams);
+
+        expect(response).toEqual(expReturn);
+        expect(fetch).toBeCalledWith(endpoint + expPath, expParams);
+    });
+
     it('calls db_size_get', async () => {
         const expPath = '/v1/db_size/get';
         const expReturn = { data: '12345' };

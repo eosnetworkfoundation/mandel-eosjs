@@ -52,6 +52,7 @@
     "jest-fetch-mock": "^3.0.3",
     "none": "^1.0.0",
     "rimraf": "^3.0.2",
+    "text-encoding": "^0.7.0",
     "ts-jest": "^26.5.6",
     "ts-loader": "^9.2.3",
     "typedoc": "^0.23.5",
