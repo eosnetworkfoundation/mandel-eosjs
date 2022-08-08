@@ -105,6 +105,14 @@ export interface GetInfoResult {
     virtual_block_net_limit: number;
     block_cpu_limit: number;
     block_net_limit: number;
+    server_version_string: string;
+    fork_db_head_block_num: number,
+    fork_db_head_block_id: string,
+    server_full_version_string: string,
+    total_cpu_weight: string,
+    total_net_weight: string,
+    earliest_available_block_num: number,
+    last_irreversible_block_time: string
 }
 
 /** Return value of `/v1/chain/get_raw_code_and_abi` */
@@ -119,4 +127,12 @@ export interface PushTransactionArgs {
     signatures: string[];
     serializedTransaction: Uint8Array;
     serializedContextFreeData?: Uint8Array;
+}
+
+/** Arguments for `send_transaction2` */
+export interface SendTransaction2Args {
+    return_failure_trace: boolean,
+    retry_trx: boolean,
+    retry_trx_num_blocks?: number,
+    transaction: PushTransactionArgs
 }

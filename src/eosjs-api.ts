@@ -5,7 +5,7 @@
 
 import { AbiProvider, AuthorityProvider, BinaryAbi, CachedAbi, SignatureProvider } from './eosjs-api-interfaces';
 import { JsonRpc } from './eosjs-jsonrpc';
-import { Abi, GetInfoResult, PushTransactionArgs } from './eosjs-rpc-interfaces';
+import { Abi, GetInfoResult, PushTransactionArgs, SendTransaction2Args } from './eosjs-rpc-interfaces';
 import * as ser from './eosjs-serialize';
 
 const abiAbi = require('../src/abi.abi.json');
@@ -223,18 +223,58 @@ export class Api {
      * Named Parameters:
      *    * `broadcast`: broadcast this transaction?
      *    * `sign`: sign this transaction?
+     *    * `useOldRPC`: use old RPC push_transaction, rather than new RPC send_transaction?
+     *    * `useOldSendRPC`: use old RPC /v1/chain/send_transaction, rather than new RPC /v1/chain/send_transaction2?
+     *    * `returnFailureTrace`: return partial traces on failed transactions?
+     *    * `retryTrxNumBlocks`: request node to retry transaction until in a block of given height, blocking call?
+     *    * `retryIrreversible`: request node to retry transaction until it is irreversible or expires, blocking call?
      *    * If both `blocksBehind` and `expireSeconds` are present,
      *      then fetch the block which is `blocksBehind` behind head block,
      *      use it as a reference for TAPoS, and expire the transaction `expireSeconds` after that block's time.
      * @returns node response if `broadcast`, `{signatures, serializedTransaction}` if `!broadcast`
      */
-    public async transact(transaction: any, { broadcast = true, sign = true, blocksBehind, expireSeconds }:
-        { broadcast?: boolean; sign?: boolean; blocksBehind?: number; expireSeconds?: number; } = {}): Promise<any> {
+    public async transact(transaction: any, { 
+            broadcast = true, 
+            sign = true, 
+            blocksBehind, 
+            expireSeconds,
+            useOldRPC = false,
+            useOldSendRPC = false,
+            returnFailureTrace = true,
+            retryTrxNumBlocks = 0,
+            retryIrreversible = false
+        }:
+        { 
+            broadcast?: boolean; 
+            sign?: boolean; 
+            blocksBehind?: number; 
+            expireSeconds?: number; 
+            useOldRPC?: boolean; 
+            useOldSendRPC?: boolean; 
+            returnFailureTrace?: boolean;
+            retryTrxNumBlocks?: number;
+            retryIrreversible?: boolean;
+        } = {}
+    ): Promise<any> {
         let info: GetInfoResult;
 
         if (!this.chainId) {
             info = await this.rpc.get_info();
             this.chainId = info.chain_id;
+        }
+
+        const isRetry = retryIrreversible || retryTrxNumBlocks > 0;
+
+        if(isRetry) {
+            if(info.server_version_string < "v3.1.0") {
+                throw new Error(`Retry transaction feature unavailable for nodeos :${info.server_version_string}`);
+            }
+            if (useOldRPC || useOldSendRPC) {
+                throw new Error('Retry transaction feature not compatible with old RPC');
+            }
+            if(retryIrreversible && retryTrxNumBlocks > 0) {
+                throw new Error('Must specify retry irreversible or until given block height');
+            }
         }
 
         if (typeof blocksBehind === 'number' && expireSeconds) { // use config fields to generate TAPOS if they exist
@@ -273,12 +313,35 @@ export class Api {
             });
         }
         if (broadcast) {
-            return this.pushSignedTransaction(pushTransactionArgs);
+            if(isRetry) {
+                let params: SendTransaction2Args = {
+                    return_failure_trace: returnFailureTrace, 
+                    retry_trx: true,
+                    transaction: pushTransactionArgs
+                }
+                if(retryTrxNumBlocks > 0) {
+                    params = {
+                        ...params,
+                        retry_trx_num_blocks: retryTrxNumBlocks
+                    }
+                }
+                return this.sendSignedTransaction2(params);
+            } else if(useOldSendRPC) {
+                return this.sendSignedTransaction(pushTransactionArgs);
+            } else if(useOldRPC) {
+                return this.pushSignedTransaction(pushTransactionArgs);
+            } else {
+                return this.sendSignedTransaction2({
+                    return_failure_trace: returnFailureTrace, 
+                    retry_trx: false,
+                    transaction: pushTransactionArgs
+                });
+            }
         }
         return pushTransactionArgs;
     }
 
-    /** Broadcast a signed transaction */
+    /** Broadcast a signed transaction using push_transaction RPC */
     public async pushSignedTransaction(
         { signatures, serializedTransaction, serializedContextFreeData }: PushTransactionArgs
     ): Promise<any> {
@@ -286,6 +349,38 @@ export class Api {
             signatures,
             serializedTransaction,
             serializedContextFreeData
+        });
+    }
+
+    /** Broadcast a signed transaction using send_transaction RPC */
+    public async sendSignedTransaction(
+        { signatures, serializedTransaction, serializedContextFreeData }: PushTransactionArgs
+    ): Promise<any> {
+        return this.rpc.send_transaction({
+            signatures,
+            serializedTransaction,
+            serializedContextFreeData
+        });
+    }
+
+    /** Broadcast a signed transaction using send_transaction2 RPC*/
+    public async sendSignedTransaction2(
+        { 
+            return_failure_trace, 
+            retry_trx, 
+            retry_trx_num_blocks, 
+            transaction: { signatures, serializedTransaction, serializedContextFreeData } 
+        }: SendTransaction2Args
+    ): Promise<any> {
+        return this.rpc.send_transaction2({
+            return_failure_trace, 
+            retry_trx, 
+            retry_trx_num_blocks, 
+            transaction: {
+                signatures,
+                serializedTransaction,
+                serializedContextFreeData
+            }
         });
     }
 
