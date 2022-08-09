@@ -85,7 +85,7 @@ EOSJS is used by many libraries across the EOSIO ecosystem, so proper testing is
 
 #### Integration Test Suite
 
-Integration tests will only work with a local node running on port 8888 and with test accounts "bob" and "alice".  This can be accomplished by following the [EOSIO Developer Getting Started Guide](https://developers.eos.io/eosio-home/docs/getting-the-software#section-step-1-1-start-keosd).
+Integration tests will only work with a local node running on port 8888 and with test accounts "bob" and "alice".  
 
 ##### Web Environment
 
