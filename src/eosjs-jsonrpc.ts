@@ -22,6 +22,7 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
     public fetchBuiltin: (input?: Request | string, init?: RequestInit) => Promise<Response>;
 
     /**
+     * @param endpoint
      * @param args
      *    * `fetch`:
      *    * browsers: leave `null` or `undefined`

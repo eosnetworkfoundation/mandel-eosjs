@@ -3,8 +3,10 @@ const { JsSignatureProvider } = require('../../dist/eosjs-jssig');
 const fetch = require('node-fetch');
 const { TextEncoder, TextDecoder } = require('util');
 
-const privateKey = '5JuH9fCXmU3xbj8nRmhPZaVrxxXrdPaRmZLW1cznNTmTQR2Kg5Z'; // replace with "bob" account private key
-/* new accounts for testing can be created by unlocking a cleos wallet then calling: 
+const privateKey = '5JPJoZXizFVi19wHkboX5fwwEU2jZVvtSJpQkQu3uqgNu8LNdQN'; // replace with "bob" account private key
+/* new accounts for testing can be created
+ * see docs/5.-Testing and Building with DUNE.md
+ *      OR  by unlocking a cleos wallet then calling:
  * 1) cleos create key --to-console (copy this privateKey & publicKey)
  * 2) cleos wallet import 
  * 3) cleos create account bob publicKey
