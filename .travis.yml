@@ -4,9 +4,9 @@ env:
 sudo: false
 language: node_js
 node_js:
-  - '10.0.0'    
+  - '16.0.0'
 before_install:
-  - npm i -g npm@6.4.1
+  - npm i -g npm@8.0.0
   - yarn global add typescript
   - yarn global add webpack 
 before_script:

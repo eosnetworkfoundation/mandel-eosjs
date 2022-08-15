@@ -1,4 +1,6 @@
 .DS_Store
+# ignore webstorm IDE
+.idea
 dist/
 dist-web/
 node_modules/

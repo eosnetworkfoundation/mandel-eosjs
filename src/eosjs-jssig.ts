@@ -50,9 +50,9 @@ export class JsSignatureProvider implements SignatureProvider {
     ) {
         const e = new ec('secp256k1') as any;
         const signBuf = Buffer.concat([
-            new Buffer(chainId, 'hex'),
-            new Buffer(serializedTransaction),
-            new Buffer(
+            Buffer.from(chainId, 'hex'),
+            Buffer.from(serializedTransaction),
+            Buffer.from(
                 serializedContextFreeData ?
                     new Uint8Array(e.hash(serializedContextFreeData).update(serializedContextFreeData).digest()) :
                     new Uint8Array(32)

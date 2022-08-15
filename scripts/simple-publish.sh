@@ -1,0 +1,4 @@
+
+
+npm login
+npm publish

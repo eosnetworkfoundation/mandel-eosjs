@@ -1,7 +1,7 @@
 {
-  "name": "mandel-eosjs",
-  "version": "1.0.0",
-  "description": "Talk to mandel-eosio API",
+  "name": "enf-eosjs",
+  "version": "23.0.0-rc3",
+  "description": "JS API to talk to eosio blockchain",
   "main": "dist/index.js",
   "scripts": {
     "cypress": "cypress run --spec 'cypress/integration/index.spec.js'",
@@ -31,7 +31,9 @@
     "bn.js": "5.2.0",
     "elliptic": "6.5.4",
     "hash.js": "1.1.7",
-    "pako": "2.0.3"
+    "pako": "2.0.3",
+    "node-fetch": "2.6.7",
+    "semver": "^7.3.7"
   },
   "devDependencies": {
     "@blockone/eslint-config-blockone": "^4.0.1",

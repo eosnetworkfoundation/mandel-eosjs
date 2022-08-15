@@ -1,21 +1,21 @@
-# eosjs ![npm](https://img.shields.io/npm/dw/eosjs.svg)
+# enf-eosjs ![npm](https://img.shields.io/npm/dw/enf-eosjs.svg)
 
-Javascript API for integration with EOSIO-based blockchains using [EOSIO RPC API](/developer-tools/01_nodeos/index.md).
+Javascript API for integration with EOS-based blockchains.
 
 ## Installation
 
 ### NPM
 
-The officially distributed npm packed will be posted soon.
+[enf-eosjs](https://www.npmjs.com/package/enf-eosjs) has been updated to support latest features in EOS blockchain. This is an updated version of the popular eosjs package.  
 
 ### NodeJS Dependency
 
-`yarn add eosjs`
+`npm install enf-eosjs`
 
 ### Using with Typescript
 
 In order to get access to the `TextEncoding` and `TextDecoding` types, you need to add `@types/text-encoding` as a dev dependency:
-`yarn add --dev @types/text-encoding`
+`npm install --save @types/text-encoding`
 
 If you're using Node (not a browser) then you'll also need to make sure the `dom` lib is referenced in your `tsconfig.json`:
 
@@ -29,15 +29,53 @@ If you're using Node (not a browser) then you'll also need to make sure the `dom
 
 ### Browser Distribution
 
-Clone this repository locally then run `yarn build-web`.  The browser distribution will be located in `dist-web` and can be directly copied into your project repository. The `dist-web` folder contains minified bundles ready for production, along with source mapped versions of the library for debugging.
+Clone this repository locally then run `npm run build-web`.  The browser distribution will be located in `dist-web` and can be directly copied into your project repository. The `dist-web` folder contains minified bundles ready for production, along with source mapped versions of the library for debugging.
+
+## Getting Started 
+
+Very simple example of using **enf-eosjs**. Included unused imports as examples. 
+
+```shell
+npm init es6
+npm install enf-eosjs 
+node node_test
+```
+
+```js
+/*
+ * @module test_enf_eosjs
+ * PUT THIS INTO A FILE NAMED node_test.js
+ */
+
+import { Api, JsonRpc, RpcError } from 'enf-eosjs';
+import fetch from 'node-fetch'
+import { TextEncoder, TextDecoder } from 'util';
+
+const rpc = new JsonRpc('https://localhost:443', { fetch });
+const api = new Api({ rpc, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
+
+var info = await rpc.get_info();
+
+console.log(info);
+```
 
 ## Import
+
+### Signature Providers
+
+It best to use a secure well supported secret store. Some examples of providers include:
+* Azure Key Vault
+* Hashicorp Vault
+* Google Cloud Secret Manager
+* AWS Secrets Management 
+
+*JsSignatureProvider* is included as an example, and it is not provided by enf-eosjs. 
 
 ### ES Modules
 
 Importing using ES6 module syntax in the browser is supported if you have a transpiler, such as Babel.
 ```js
-import { Api, JsonRpc, RpcError } from 'eosjs';
+import { Api, JsonRpc, RpcError } from 'enf-eosjs';
 import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';           // development only
 ```
 
@@ -46,7 +84,6 @@ import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';           // devel
 Importing using commonJS syntax is supported by NodeJS out of the box.
 ```js
 const { Api, JsonRpc, RpcError } = require('eosjs');
-const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');      // development only
 const fetch = require('node-fetch');                                    // node only; not needed in browsers
 const { TextEncoder, TextDecoder } = require('util');                   // node only; native TextEncoder/Decoder
 const { TextEncoder, TextDecoder } = require('text-encoding');          // React Native, IE11, and Edge Browsers only

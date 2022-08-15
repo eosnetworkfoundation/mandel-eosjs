@@ -22,13 +22,13 @@ const transactWithConfig = async () => await api.transact({
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bob',
+            actor: 'bobtestlion1',
             permission: 'active',
         }],
         data: {
-            from: 'bob',
-            to: 'alice',
-            quantity: '0.0001 SYS',
+            from: 'bobtestlion1',
+            to: 'alicetestlio',
+            quantity: '0.0001 EOS',
             memo: '',
         },
     }]
@@ -53,13 +53,13 @@ const transactWithoutConfig = async () => {
             account: 'eosio.token',
             name: 'transfer',
             authorization: [{
-                actor: 'bob',
+                actor: 'bobtestlion1',
                 permission: 'active',
             }],
             data: {
-                from: 'bob',
-                to: 'alice',
-                quantity: '0.0001 SYS',
+                from: 'bobtestlion1',
+                to: 'alicetestlio',
+                quantity: '0.0001 EOS',
                 memo: '',
             },
         }]
@@ -72,13 +72,13 @@ const transactWithoutBroadcast = async () => await api.transact({
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bob',
+            actor: 'bobtestlion1',
             permission: 'active',
         }],
         data: {
-            from: 'bob',
-            to: 'alice',
-            quantity: '0.0001 SYS',
+            from: 'bobtestlion1',
+            to: 'alicetestlio',
+            quantity: '0.0001 EOS',
             memo: '',
         },
     }]
@@ -94,13 +94,13 @@ const transactWithRetry = async () => await api.transact({
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bob',
+            actor: 'bobtestlion1',
             permission: 'active',
         }],
         data: {
-            from: 'bob',
-            to: 'alice',
-            quantity: '0.0001 SYS',
+            from: 'bobtestlion1',
+            to: 'alicetestlio',
+            quantity: '0.0001 EOS',
             memo: '',
         },
     }]
@@ -116,13 +116,13 @@ const transactWithRetryIrreversible = async () => await api.transact({
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bob',
+            actor: 'bobtestlion1',
             permission: 'active',
         }],
         data: {
-            from: 'bob',
-            to: 'alice',
-            quantity: '0.0001 SYS',
+            from: 'bobtestlion1',
+            to: 'alicetestlio',
+            quantity: '0.0001 EOS',
             memo: '',
         },
     }]
@@ -140,13 +140,13 @@ const transactShouldFail = async () => await api.transact({
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bob',
+            actor: 'bobtestlion1',
             permission: 'active',
         }],
         data: {
-            from: 'bob',
-            to: 'alice',
-            quantity: '0.0001 SYS',
+            from: 'bobtestlion1',
+            to: 'alicetestlio',
+            quantity: '0.0001 EOS',
             memo: '',
         },
     }]

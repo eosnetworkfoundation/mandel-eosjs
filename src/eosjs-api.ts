@@ -11,6 +11,9 @@ import * as ser from './eosjs-serialize';
 const abiAbi = require('../src/abi.abi.json');
 const transactionAbi = require('../src/transaction.abi.json');
 
+const semver = require('semver')
+
+
 export class Api {
     /** Issues RPC calls */
     public rpc: JsonRpc;
@@ -42,6 +45,12 @@ export class Api {
     /** Fetched abis */
     public cachedAbis = new Map<string, CachedAbi>();
 
+    /** Matched get_info server version string
+     *  Deferred call to get_info will populate
+     *  Needed for new 3.1+ endpoints to check support
+     * */
+    private server_version_string?: string
+
     /**
      * @param args
      *    * `rpc`: Issues RPC calls
@@ -71,6 +80,9 @@ export class Api {
 
         this.abiTypes = ser.getTypesFromAbi(ser.createInitialTypes(), abiAbi);
         this.transactionTypes = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+        // deferred call to get_info will populate
+        this.server_version_string = undefined;
     }
 
     /** Decodes an abi as Uint8Array into json. */
@@ -261,12 +273,20 @@ export class Api {
         if (!this.chainId) {
             info = await this.rpc.get_info();
             this.chainId = info.chain_id;
+            this.server_version_string = info.server_version_string;
         }
 
         const isRetry = retryIrreversible || retryTrxNumBlocks > 0;
 
         if(isRetry) {
-            if(info.server_version_string < "v3.1.0") {
+
+            if (!this.server_version_string) {
+                info = await this.rpc.get_info();
+                this.server_version_string = info.server_version_string;
+            }
+
+            // check if current version bigger than 3.1 release or release candidate
+            if(semver.lt(this.server_version_string,'v3.1.0-rc1') ) {
                 throw new Error(`Retry transaction feature unavailable for nodeos :${info.server_version_string}`);
             }
             if (useOldRPC || useOldSendRPC) {
