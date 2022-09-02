@@ -1,4 +1,4 @@
-# enf-eosjs ![npm](https://img.shields.io/npm/dw/enf-eosjs.svg)
+enf-eosjs ![npm](https://img.shields.io/npm/dw/enf-eosjs.svg)
 
 Javascript API for integration with EOS-based blockchains.
 
