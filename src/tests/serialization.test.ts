@@ -1,38 +1,50 @@
 import { TextDecoder, TextEncoder } from 'text-encoding';
-import { Api } from '../eosjs-api';
-import { JsonRpc } from '../eosjs-jsonrpc';
-import { JsSignatureProvider } from '../eosjs-jssig';
+import * as ser from "../eosjs-serialize";
+import {SerialBuffer} from "../eosjs-serialize";
+const transactionAbi = require('../transaction.abi.json');
 
-const reply = {
+// signed int value -90909090909090909 int 64
+// const serializedBigNumberAsHex: string = "A38B82D9A906BDFE";
+const BigNegativeNumberAsDecArray = [163, 139, 130, 217, 169, 6, 189, 254];
+// signed int value 1 type int64
+const OneAsDecArray = [1, 0, 0, 0, 0, 0, 0, 0];
+// signed int value -1 type int 64
+const NegOneAsDecArray = [ 255, 255, 255, 255, 255, 255, 255, 255];
 
-};
+//A3 8B 82 D9 A9 06 BD FE
+describe('number-deserialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
 
-describe('serialization', () => {
-    let api: any;
-    const fetch = async (input: any, init: any): Promise<any> => ({
-        ok: true,
-        json: async () => {
-            if (input === '/v1/chain/get_raw_code_and_abi') {
-                return {
-                    account_name: 'testeostoken',
-                    abi: "DmVvc2lvOjphYmkvMS4wAQxhY2NvdW50X25hbWUEbmFtZQUIdHJhbnNmZXIABARmcm9tDGFjY291bnRfbmFtZQJ0bwxhY2NvdW50X25hbWUIcXVhbnRpdHkFYXNzZXQEbWVtbwZzdHJpbmcGY3JlYXRlAAIGaXNzdWVyDGFjY291bnRfbmFtZQ5tYXhpbXVtX3N1cHBseQVhc3NldAVpc3N1ZQADAnRvDGFjY291bnRfbmFtZQhxdWFudGl0eQVhc3NldARtZW1vBnN0cmluZwdhY2NvdW50AAEHYmFsYW5jZQVhc3NldA5jdXJyZW5jeV9zdGF0cwADBnN1cHBseQVhc3NldAptYXhfc3VwcGx5BWFzc2V0Bmlzc3VlcgxhY2NvdW50X25hbWUDAAAAVy08zc0IdHJhbnNmZXLnBSMjIFRyYW5zZmVyIFRlcm1zICYgQ29uZGl0aW9ucwoKSSwge3tmcm9tfX0sIGNlcnRpZnkgdGhlIGZvbGxvd2luZyB0byBiZSB0cnVlIHRvIHRoZSBiZXN0IG9mIG15IGtub3dsZWRnZToKCjEuIEkgY2VydGlmeSB0aGF0IHt7cXVhbnRpdHl9fSBpcyBub3QgdGhlIHByb2NlZWRzIG9mIGZyYXVkdWxlbnQgb3IgdmlvbGVudCBhY3Rpdml0aWVzLgoyLiBJIGNlcnRpZnkgdGhhdCwgdG8gdGhlIGJlc3Qgb2YgbXkga25vd2xlZGdlLCB7e3RvfX0gaXMgbm90IHN1cHBvcnRpbmcgaW5pdGlhdGlvbiBvZiB2aW9sZW5jZSBhZ2FpbnN0IG90aGVycy4KMy4gSSBoYXZlIGRpc2Nsb3NlZCBhbnkgY29udHJhY3R1YWwgdGVybXMgJiBjb25kaXRpb25zIHdpdGggcmVzcGVjdCB0byB7e3F1YW50aXR5fX0gdG8ge3t0b319LgoKSSB1bmRlcnN0YW5kIHRoYXQgZnVuZHMgdHJhbnNmZXJzIGFyZSBub3QgcmV2ZXJzaWJsZSBhZnRlciB0aGUge3t0cmFuc2FjdGlvbi5kZWxheX19IHNlY29uZHMgb3Igb3RoZXIgZGVsYXkgYXMgY29uZmlndXJlZCBieSB7e2Zyb219fSdzIHBlcm1pc3Npb25zLgoKSWYgdGhpcyBhY3Rpb24gZmFpbHMgdG8gYmUgaXJyZXZlcnNpYmx5IGNvbmZpcm1lZCBhZnRlciByZWNlaXZpbmcgZ29vZHMgb3Igc2VydmljZXMgZnJvbSAne3t0b319JywgSSBhZ3JlZSB0byBlaXRoZXIgcmV0dXJuIHRoZSBnb29kcyBvciBzZXJ2aWNlcyBvciByZXNlbmQge3txdWFudGl0eX19IGluIGEgdGltZWx5IG1hbm5lci4KAAAAAAClMXYFaXNzdWUAAAAAAKhs1EUGY3JlYXRlAAIAAAA4T00RMgNpNjQBCGN1cnJlbmN5AQZ1aW50NjQHYWNjb3VudAAAAAAAkE3GA2k2NAEIY3VycmVuY3kBBnVpbnQ2NA5jdXJyZW5jeV9zdGF0cwAAAA===", // tslint:disable-line
-                };
-            }
-
-            return reply;
-        },
-    });
-
-    beforeEach(() => {
-        const rpc = new JsonRpc('', {fetch});
-        const signatureProvider = new JsSignatureProvider(['5JtUScZK2XEp3g9gh7F8bwtPTRAkASmNrrftmx4AxDKD5K4zDnr']);
-        const chainId = '038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca';
-        api = new Api({
-            rpc, signatureProvider, chainId, textDecoder: new TextDecoder(), textEncoder: new TextEncoder(),
+    it('Deserialize Number One', () => {
+        const buffer: SerialBuffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
         });
+        buffer.pushArray(OneAsDecArray);
+        const oneAsSigned64Int = BigInt(transactionType.get("uint64").deserialize(buffer));
+        expect(oneAsSigned64Int).toEqual(BigInt(1));
     });
 
-    it('Doesnt crash', () => {
-        expect(api).toBeTruthy();
+    it('Deserialize Number Negative One', () => {
+        const buffer: SerialBuffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+        buffer.pushArray(NegOneAsDecArray);
+        const oneAsSigned64Int = BigInt(transactionType.get("uint64").deserialize(buffer));
+        expect(oneAsSigned64Int).toEqual(BigInt(-1));
     });
+
+    it('Deserialize Big Signed Number', () => {
+        const buffer: SerialBuffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+        buffer.pushArray(BigNegativeNumberAsDecArray);
+        const largeSigned64Int = BigInt(transactionType.get("uint64").deserialize(buffer));
+        expect(largeSigned64Int).toEqual(BigInt(-90909090909090909));
+    });
+
 });

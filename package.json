@@ -9,6 +9,7 @@
     "prepare": "npm run build",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx src",
     "test": "jest src/tests/*eosjs*",
+    "test-serialization": "jest src/tests/serialization.test.ts",
     "test-node": "jest src/tests/*node*",
     "test-all": "yarn test && yarn test-node && yarn cypress",
     "build": "tsc -p ./tsconfig.json && cp src/ripemd.es5.js dist/ripemd.js",
