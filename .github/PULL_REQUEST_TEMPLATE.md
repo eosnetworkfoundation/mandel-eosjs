@@ -1,20 +1,12 @@
-<!-- PLEASE FILL OUT THE FOLLOWING MARKDOWN TEMPLATE -->
-<!-- PR title alone should be sufficient to understand changes. -->
+## Change
+short description
 
-## Change Description
-<!-- Describe your changes, their justification, AND their impact. Reference issues or pull requests where possible (use '#XX' or 'GH-XX' where XX is the issue or pull request number). -->
-
-### Listing of Commits 
+### Listing of Commits
+<!-- git log --oneline origin/main..origin/"$BRANCH_TO_MERGE_FROM" -->
 
 ### Listing of Files Changed
+<!-- git diff --name-only origin/main...origin/"$BRANCH_TO_MERGE_FROM" -->
 
-## API Changes
-- [ ] API Changes
-<!-- checked [x] = API changes; unchecked [ ] = no changes, ignore this section -->
-<!-- If this PR introduces API changes, please describe the changes here. What will developers need to know before upgrading to this version? -->
+### API Changes
 
-
-## Documentation Additions
-- [ ] Documentation Additions
-<!-- checked [x] = Documentation changes; unchecked [ ] = no changes, ignore this section -->
-<!-- Describe what must be added to the documentation after merge. -->
+### Documentation Additions
