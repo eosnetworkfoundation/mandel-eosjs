@@ -4,20 +4,22 @@ about: Describes planned features and updates
 
 ---
 
-##Work Title##
+### Work Title
 Summarize Desired Outcome
 
-##Requirements##
+#### `Requirements`
 One Sentence
 
-##Complex Requirements##
+#### `Scenarios`
+
+### Additional Considerations
 _The Following Are Optional_
 
-###Design Notes###
+#### `Design Notes`
 Tradeoffs, compatibility, encapsulation
 
-###Coding Notes###
+#### `Coding Notes`
 How to code it
 
-###Additional context###
+#### `Additional context`
 Add any other context about the problem here.
