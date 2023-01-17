@@ -5,7 +5,7 @@ const transactionAbi = require('../transaction.abi.json');
 
 // setup shared buffer re-established before every test
 let buffer: SerialBuffer;
-describe('number-deserialization', () => {
+describe('Floats and Ints Deserialization', () => {
     let textEncoder = new TextEncoder();
     let textDecoder = new TextDecoder();
     let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
@@ -16,6 +16,8 @@ describe('number-deserialization', () => {
             textDecoder: textDecoder,
         });
     });
+
+
 
     it('Deserialize Number One', () => {
         // int value 1 type uint64
