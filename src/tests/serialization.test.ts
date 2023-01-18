@@ -1137,3 +1137,153 @@ describe('Varint Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
 });
+
+describe('Time Series Serialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+
+    it('time_point_sec epoch', () => {
+        const type = "time_point_sec";
+        const testValue = "1970-01-01T00:00:00.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toEqual("00000000");
+    });
+    it('time_point_sec 2018-06-15T19:17:47.000', () => {
+        const type = "time_point_sec";
+        const testValue = "2018-06-15T19:17:47.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toEqual("DB10245B");
+    });
+    it('check time_point epoch', () => {
+        const type = "time_point";
+        const testValue = "1970-01-01T00:00:00.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check time_point epoch', () => {
+        const type = "time_point";
+        const testValue = "1970-01-01T00:00:00.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check time_point 1970-01-01T00:00:00.002', () => {
+        const type = "time_point";
+        const testValue = "1970-01-01T00:00:00.002";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check time_point 1970-01-01T00:00:00.010', () => {
+        const type = "time_point";
+        const testValue = "1970-01-01T00:00:00.010";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check time_point 1970-01-01T00:00:00.100', () => {
+        const type = "time_point";
+        const testValue = "1970-01-01T00:00:00.100";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check time_point 2018-06-15T19:17:47.000', () => {
+        const type = "time_point";
+        const testValue = "2018-06-15T19:17:47.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check time_point 2018-06-15T19:17:47.999', () => {
+        const type = "time_point";
+        const testValue = "2018-06-15T19:17:47.999";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check time_point 2060-06-15T19:17:47.999', () => {
+        const type = "time_point";
+        const testValue = "2060-06-15T19:17:47.999";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check block_timestamp_type 2000-01-01T00:00:00.000', () => {
+        const type = "block_timestamp_type";
+        const testValue = "2000-01-01T00:00:00.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check block_timestamp_type 2000-01-01T00:00:00.500', () => {
+        const type = "block_timestamp_type";
+        const testValue = "2000-01-01T00:00:00.500";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check block_timestamp_type 2000-01-01T00:00:01.000', () => {
+        const type = "block_timestamp_type";
+        const testValue = "2000-01-01T00:00:01.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check block_timestamp_type 2018-06-15T19:17:47.500', () => {
+        const type = "block_timestamp_type";
+        const testValue = "2018-06-15T19:17:47.500";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+    it('check block_timestamp_type 2018-06-15T19:17:48.000', () => {
+        const type = "block_timestamp_type";
+        const testValue = "2018-06-15T19:17:48.000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+    });
+
+    describe('Name Serialization', () => {
+        let textEncoder = new TextEncoder();
+        let textDecoder = new TextDecoder();
+        let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+        /* reset buffer */
+        beforeEach(() => {
+            buffer = new ser.SerialBuffer({
+                textEncoder: textEncoder,
+                textDecoder: textDecoder,
+            });
+        });
+    });
+
+});
