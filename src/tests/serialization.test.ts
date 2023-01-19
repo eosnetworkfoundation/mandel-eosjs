@@ -804,7 +804,8 @@ describe('Name Bytes and String Deserialization', () => {
     it('check name too long', () => {
         const hex = "FFFFFFFFFFFFFFFF";
         const type = "name";
-        const expected = "zzzzzzzzzzzzz";
+        // 13th char of a name must be j or lower
+        const expected = "zzzzzzzzzzzzj";
         buffer.pushArray(ser.hexToUint8Array(hex));
         const thisType = ser.getType(transactionType, type);
         const testValue = thisType.deserialize(buffer);
@@ -1757,7 +1758,21 @@ describe('Name Bytes and String Serialization', () => {
     it('check name too long', () => {
         const expected = "FFFFFFFFFFFFFFFF";
         const type = "name";
+        // 13th character of a name must be 'j' or lower
+        // maxes out byte array and extra bits for 13th 'z' are dropped
+        // turing the last 'z' into an 'j'
         const testValue = "zzzzzzzzzzzzz";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check thirteenth j', () => {
+        const expected = "FFFFFFFFFFFFFFFF";
+        const type = "name";
+        // 13th character of a name must be 'j' or lower
+        const testValue = "zzzzzzzzzzzzj";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
