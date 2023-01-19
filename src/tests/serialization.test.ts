@@ -1,6 +1,7 @@
-import { TextDecoder, TextEncoder } from 'text-encoding';
+import {TextDecoder, TextEncoder} from 'text-encoding';
 import * as ser from "../eosjs-serialize";
 import {SerialBuffer} from "../eosjs-serialize";
+
 const transactionAbi = require('../transaction.abi.json');
 
 // setup shared buffer re-established before every test
@@ -44,7 +45,7 @@ describe('Floats and Ints Deserialization', () => {
     let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
 
     /* reset buffer */
-    beforeEach( () => {
+    beforeEach(() => {
         buffer = new ser.SerialBuffer({
             textEncoder: textEncoder,
             textDecoder: textDecoder,
@@ -136,7 +137,7 @@ describe('Floats and Ints Deserialization', () => {
 
     it('Deserialize Number Negative One', () => {
         // signed int value -1 type int 64
-        const NegOneAsDecArray = [ 255, 255, 255, 255, 255, 255, 255, 255];
+        const NegOneAsDecArray = [255, 255, 255, 255, 255, 255, 255, 255];
         buffer.pushArray(NegOneAsDecArray);
         const thisType = ser.getType(transactionType, "int64");
         const oneAsSigned64Int = BigInt(thisType.deserialize(buffer));
@@ -168,7 +169,7 @@ describe('Floats and Ints Deserialization', () => {
         const float32SmallAsDecArray = [0, 0, 0, 62];
         buffer.pushArray(float32SmallAsDecArray);
         const thisType = ser.getType(transactionType, "float32");
-        const float32Small: number  = thisType.deserialize(buffer);
+        const float32Small: number = thisType.deserialize(buffer);
         expect(float32Small).toEqual(0.125);
     });
 
@@ -204,7 +205,7 @@ describe('Floats and Ints Deserialization', () => {
     it('Deserialize Float64 Neg Small Number', () => {
         // 0.125 in float64
         // 000000000000C0BF
-        const float64NegSmallAsDecArray = [0, 0, 0, 0, 0, 0, 192, 191 ];
+        const float64NegSmallAsDecArray = [0, 0, 0, 0, 0, 0, 192, 191];
         buffer.pushArray(float64NegSmallAsDecArray);
         const thisType = ser.getType(transactionType, "float64");
         const float64NegSmall: number = thisType.deserialize(buffer);
@@ -214,7 +215,7 @@ describe('Floats and Ints Deserialization', () => {
     it('Deserialize Float64 Large Integer', () => {
         // 9007199254740992 in float64
         // 0000000000004043
-        const float64LargeAsDecArray = [0, 0, 0, 0, 0, 0, 64, 67 ];
+        const float64LargeAsDecArray = [0, 0, 0, 0, 0, 0, 64, 67];
         buffer.pushArray(float64LargeAsDecArray);
         const thisType = ser.getType(transactionType, "float64");
         const float64Large = thisType.deserialize(buffer);
@@ -224,7 +225,7 @@ describe('Floats and Ints Deserialization', () => {
     it('Deserialize Float64 Large Neg Integer', () => {
         // -9007199254740992 in float64
         // 00000000000040C3
-        const float64NegLargeAsDecArray = [0, 0, 0, 0, 0, 0, 64, 195 ];
+        const float64NegLargeAsDecArray = [0, 0, 0, 0, 0, 0, 64, 195];
         buffer.pushArray(float64NegLargeAsDecArray);
         const thisType = ser.getType(transactionType, "float64");
         const float64LargeSmall = thisType.deserialize(buffer);
@@ -234,7 +235,7 @@ describe('Floats and Ints Deserialization', () => {
     it('Deserialize Float64 Pi', () => {
         // 3.141592653589793115997963468544185161590576171875 in float64
         // 182D4454FB210940
-        const float64PiAsDecArray = [24, 45, 68, 84, 251, 33, 9, 64 ];
+        const float64PiAsDecArray = [24, 45, 68, 84, 251, 33, 9, 64];
         buffer.pushArray(float64PiAsDecArray);
         const thisType = ser.getType(transactionType, "float64");
         const float64Pi = thisType.deserialize(buffer);
@@ -519,10 +520,11 @@ describe('Varint Deserialization', () => {
         const testValue = thisType.deserialize(buffer);
         expect(expected).toEqual(testValue);
     });
-    it('check varuint32 127',() => {
+    it('check varuint32 127', () => {
         const hex = "7F";
         const type = "varuint32";
-        const expected = 127;     buffer.pushArray(ser.hexToUint8Array(hex));
+        const expected = 127;
+        buffer.pushArray(ser.hexToUint8Array(hex));
         const thisType = ser.getType(transactionType, type);
         const testValue = thisType.deserialize(buffer);
         expect(expected).toEqual(testValue);
@@ -719,6 +721,220 @@ describe('Varint Deserialization', () => {
         expect(expected).toEqual(testValue);
     });
 });
+
+describe('Name Bytes and String Deserialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+
+    it('check empty name', () => {
+        const type = "name";
+        const expected = "";
+        const hex = "0000000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check name single digit', () => {
+        const hex = "0000000000000008";
+        const type = "name";
+        const expected = "1";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check name simple', () => {
+        const hex = "000000000090D031";
+        const type = "name";
+        const expected = "abcd";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('', () => {
+        const hex = "0000004B8184C031";
+        const type = "name";
+        const expected = "ab.cd.ef";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check name with periods', () => {
+        const hex = "3444004B8184C031";
+        const type = "name";
+        const expected = "ab.cd.ef.1234";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check name leading trailing dots', () => {
+        const hex = "00C0522021700C00";
+        const type = "name";
+        const expected = '..ab.cd.ef..';
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check sleepy name', () => {
+        const hex = "F0FFFFFFFFFFFFFF";
+        const type = "name";
+        const expected = "zzzzzzzzzzzz";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check name too long', () => {
+        const hex = "FFFFFFFFFFFFFFFF";
+        const type = "name";
+        const expected = "zzzzzzzzzzzzz";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check empty byte', () => {
+        const hex = "00";
+        const type = "bytes";
+        const expected = "";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check zero byte', () => {
+        const hex = "0100";
+        const type = "bytes";
+        const expected = "00";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check byte long string', () => {
+        const hex = "10AABBCCDDEEFF00010203040506070809";
+        const type = "bytes";
+        const expected = "AABBCCDDEEFF00010203040506070809";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check empty string', () => {
+        const hex = "00";
+        const type = "string";
+        const expected = "";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check single char string', () => {
+        const hex = "017A";
+        const type = "string";
+        const expected = "z";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check longer string', () => {
+        const hex = "1154686973206973206120737472696E672E";
+        const type = "string";
+        const expected = "This is a string.";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check 128-long string ', () => {
+        const hex = "8201222A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A22";
+        const type = "string";
+        const expected = '"' + '*'.repeat(128) + '"';
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check utf8 string', () => {
+        const hex = "455C75303030302020E8BF99E698AFE4B880E4B8AAE6B58BE8AF952020D0ADD182D0BE20D182D0B5D181D1822020D987D8B0D8A720D8A7D8AED8AAD8A8D8A7D8B120F09F918D";
+        const type = "string";
+        const expected = "\\u0000  这是一个测试  Это тест  هذا اختبار 👍";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+});
+describe('String and Byte Exceptions', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+
+    it('error: name expected name', () => {
+        expect(() => {
+            const testValue = true;
+            const type = "name";
+            const thisType = ser.getType(transactionType, type);
+            thisType.serialize(buffer, testValue);
+            const hex = ser.arrayToHex(buffer.asUint8Array());
+            expect(hex).toBeTruthy();
+        }).toThrow("Expected string containing name");
+    });
+    it('error: bytes too short', () => {
+        expect(() => {
+            const testValue = "0";
+            const type = "bytes";
+            const thisType = ser.getType(transactionType, type);
+            thisType.serialize(buffer, testValue);
+            const hex = ser.arrayToHex(buffer.asUint8Array());
+            expect(hex).toBeTruthy();
+        }).toThrow("Odd number of hex digits");
+    });
+    it('error: bytes not hex', () => {
+        expect(() => {
+            const testValue = "yz";
+            const type = "bytes";
+            const thisType = ser.getType(transactionType, type);
+            thisType.serialize(buffer, testValue);
+            const hex = ser.arrayToHex(buffer.asUint8Array());
+            expect(hex).toBeTruthy();
+        }).toThrow("Expected hex string");
+    });
+    it('error: bytes expected hex', () => {
+        expect(() => {
+            const testValue = true;
+            const type = "bytes";
+            const thisType = ser.getType(transactionType, type);
+            thisType.serialize(buffer, testValue);
+            const hex = ser.arrayToHex(buffer.asUint8Array());
+            expect(hex).toBeTruthy();
+        }).toThrow("Expected string containing hex digits");
+    });
+});
+
 describe('Bool Serialization Exceptions', () => {
     let textEncoder = new TextEncoder();
     let textDecoder = new TextDecoder();
@@ -776,7 +992,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
     });
 
     it('out of range int8 with 128', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = 32768;
             const type = "int16";
             const thisType = ser.getType(transactionType, type);
@@ -785,8 +1001,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range int8 with -129', () => {
-        expect ( () => {
+    it('out of range int8 with -129', () => {
+        expect(() => {
             const type = "int8";
             const testValue = -129;
             const thisType = ser.getType(transactionType, type);
@@ -795,8 +1011,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range uint8 with -1', () => {
-        expect ( () => {
+    it('out of range uint8 with -1', () => {
+        expect(() => {
             const type = "uint8";
             const testValue = -1;
             const thisType = ser.getType(transactionType, type);
@@ -805,8 +1021,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range uint8 with 256', () => {
-        expect ( () => {
+    it('out of range uint8 with 256', () => {
+        expect(() => {
             const type = "uint8";
             const testValue = 256;
             const thisType = ser.getType(transactionType, type);
@@ -815,8 +1031,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range int8 with char 128', () => {
-        expect ( () => {
+    it('out of range int8 with char 128', () => {
+        expect(() => {
             const type = "int8";
             const testValue = '128';
             const thisType = ser.getType(transactionType, type);
@@ -825,8 +1041,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range int8 with char -129', () => {
-        expect ( () => {
+    it('out of range int8 with char -129', () => {
+        expect(() => {
             const type = "int8";
             const testValue = '-129';
             const thisType = ser.getType(transactionType, type);
@@ -835,8 +1051,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range uint8 with char -1', () => {
-        expect ( () => {
+    it('out of range uint8 with char -1', () => {
+        expect(() => {
             const type = "uint8";
             const testValue = '-1';
             const thisType = ser.getType(transactionType, type);
@@ -845,8 +1061,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range uint8 with char 256', () => {
-        expect ( () => {
+    it('out of range uint8 with char 256', () => {
+        expect(() => {
             const type = "uint8";
             const testValue = '256';
             const thisType = ser.getType(transactionType, type);
@@ -857,7 +1073,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
     });
 
     it('error: read past end of buffer int16 01', () => {
-        expect ( () => {
+        expect(() => {
             const hex = "01";
             const type = "int16";
             const thisType = ser.getType(transactionType, type);
@@ -866,7 +1082,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Expected number");
     });
     it('out of range int16 32768', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = 32768;
             const type = "int16";
             const thisType = ser.getType(transactionType, type);
@@ -876,7 +1092,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
     it('out of range int16 -32769', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = -32769;
             const type = "int16";
             const thisType = ser.getType(transactionType, type);
@@ -886,7 +1102,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
     it('out of range uint16 -1', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = -1;
             const type = "uint16";
             const thisType = ser.getType(transactionType, type);
@@ -896,7 +1112,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
     it('out of range uint16 655356', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = 655356;
             const type = "uint16";
             const thisType = ser.getType(transactionType, type);
@@ -906,7 +1122,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
     it('check error: Expected number int32 foo', () => {
-        expect ( () => {
+        expect(() => {
             const hex = "foo";
             const type = "int32";
             const thisType = ser.getType(transactionType, type);
@@ -915,7 +1131,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Odd number of hex digits");
     });
     it('Error: Expected number int32 true', () => {
-        expect ( () => {
+        expect(() => {
             const hex = "true";
             const type = "int32";
             const thisType = ser.getType(transactionType, type);
@@ -924,7 +1140,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Expected hex string");
     });
     it('Error: Expected number int32 []', () => {
-        expect ( () => {
+        expect(() => {
             const hex = "[]";
             const type = "int32";
             const thisType = ser.getType(transactionType, type);
@@ -933,7 +1149,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Expected hex string");
     });
     it('Error: Expected number int32 {}', () => {
-        expect ( () => {
+        expect(() => {
             const hex = "{}";
             const type = "int32";
             const thisType = ser.getType(transactionType, type);
@@ -942,7 +1158,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Expected hex string");
     });
     it('out of range int32 2147483648', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = 2147483648;
             const type = "int32";
             const thisType = ser.getType(transactionType, type);
@@ -952,7 +1168,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
     it('out of range int32 -2147483649', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = -2147483649;
             const type = "int32";
             const thisType = ser.getType(transactionType, type);
@@ -962,7 +1178,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
     it('out of range uint32 -1', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = -1;
             const type = "uint32";
             const thisType = ser.getType(transactionType, type);
@@ -972,7 +1188,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("Number is out of range");
     });
     it('out of range uint32 4294967296', () => {
-        expect ( () => {
+        expect(() => {
             const testValue = 4294967296;
             const type = "uint32";
             const thisType = ser.getType(transactionType, type);
@@ -981,8 +1197,8 @@ describe('Floats and Ints Serialization Exceptions', () => {
             expect(hex).toBeTruthy();
         }).toThrow("Number is out of range");
     });
-    it ('out of range uint64 -1', () => {
-        expect ( () => {
+    it('out of range uint64 -1', () => {
+        expect(() => {
             const type = "uint64";
             const testValue = -1;
             const thisType = ser.getType(transactionType, type);
@@ -992,7 +1208,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("invalid number");
     });
     it('Error int64 out of range 9223372036854775808', () => {
-        expect ( () => {
+        expect(() => {
             const type = "int64";
             const testValue = 9223372036854775808;
             const thisType = ser.getType(transactionType, type);
@@ -1002,7 +1218,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("number is out of range");
     });
     it('Error int64 out of range -9223372036854775809', () => {
-        expect ( () => {
+        expect(() => {
             const type = "int64";
             const testValue = -9223372036854775809;
             const thisType = ser.getType(transactionType, type);
@@ -1012,7 +1228,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("number is out of range");
     });
     it('Error int64 out of range 18446744073709551616', () => {
-        expect ( () => {
+        expect(() => {
             const type = "int64";
             const testValue = 18446744073709551616;
             const thisType = ser.getType(transactionType, type);
@@ -1022,7 +1238,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("number is out of range");
     });
     it('Error int128 out of range 170141183460469231731687303715884105728', () => {
-        expect ( () => {
+        expect(() => {
             const type = "int128";
             const testValue = 170141183460469231731687303715884105728;
             const thisType = ser.getType(transactionType, type);
@@ -1032,7 +1248,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("invalid number");
     });
     it('Error int128 out of range -170141183460469231731687303715884105729', () => {
-        expect ( () => {
+        expect(() => {
             const type = "int128";
             const testValue = -170141183460469231731687303715884105729;
             const thisType = ser.getType(transactionType, type);
@@ -1042,7 +1258,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("invalid number");
     });
     it('Error int128 not a number true', () => {
-        expect ( () => {
+        expect(() => {
             const type = "int128";
             const testValue = true;
             const thisType = ser.getType(transactionType, type);
@@ -1052,7 +1268,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("invalid number");
     });
     it('Error uint128 out of range -1', () => {
-        expect ( () => {
+        expect(() => {
             const type = "uint128";
             const testValue = -1;
             const thisType = ser.getType(transactionType, type);
@@ -1062,7 +1278,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("invalid number");
     });
     it('Error uint128 not a number true', () => {
-        expect ( () => {
+        expect(() => {
             const type = "uint128";
             const testValue = true;
             const thisType = ser.getType(transactionType, type);
@@ -1072,7 +1288,7 @@ describe('Floats and Ints Serialization Exceptions', () => {
         }).toThrow("invalid number");
     });
     it('Error uint128 out of range 340282366920938463463374607431768211456', () => {
-        expect ( () => {
+        expect(() => {
             const type = "uint128";
             const testValue = 340282366920938463463374607431768211456;
             const thisType = ser.getType(transactionType, type);
@@ -1170,120 +1386,597 @@ describe('Time Series Serialization', () => {
     it('check time_point epoch', () => {
         const type = "time_point";
         const testValue = "1970-01-01T00:00:00.000";
+        const expected = "0000000000000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
-    it('check time_point epoch', () => {
+    it('check time_point first sec', () => {
         const type = "time_point";
-        const testValue = "1970-01-01T00:00:00.000";
+        const testValue = "1970-01-01T00:00:00.001";
+        const expected = "E803000000000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check time_point 1970-01-01T00:00:00.002', () => {
         const type = "time_point";
         const testValue = "1970-01-01T00:00:00.002";
+        const expected = "D007000000000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check time_point 1970-01-01T00:00:00.010', () => {
         const type = "time_point";
         const testValue = "1970-01-01T00:00:00.010";
+        const expected = "1027000000000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check time_point 1970-01-01T00:00:00.100', () => {
         const type = "time_point";
         const testValue = "1970-01-01T00:00:00.100";
+        const expected = "A086010000000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check time_point 2018-06-15T19:17:47.000', () => {
         const type = "time_point";
         const testValue = "2018-06-15T19:17:47.000";
+        const expected = "C0AC3112B36E0500";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check time_point 2018-06-15T19:17:47.999', () => {
         const type = "time_point";
         const testValue = "2018-06-15T19:17:47.999";
+        const expected = "18EB4012B36E0500";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check time_point 2060-06-15T19:17:47.999', () => {
         const type = "time_point";
         const testValue = "2060-06-15T19:17:47.999";
+        const expected = "18CBC45533240A00";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check block_timestamp_type 2000-01-01T00:00:00.000', () => {
         const type = "block_timestamp_type";
         const testValue = "2000-01-01T00:00:00.000";
+        const expected = "00000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check block_timestamp_type 2000-01-01T00:00:00.500', () => {
         const type = "block_timestamp_type";
         const testValue = "2000-01-01T00:00:00.500";
+        const expected = "01000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check block_timestamp_type 2000-01-01T00:00:01.000', () => {
         const type = "block_timestamp_type";
         const testValue = "2000-01-01T00:00:01.000";
+        const expected = "02000000";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check block_timestamp_type 2018-06-15T19:17:47.500', () => {
         const type = "block_timestamp_type";
         const testValue = "2018-06-15T19:17:47.500";
+        const expected = "B79A6D45";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
     it('check block_timestamp_type 2018-06-15T19:17:48.000', () => {
         const type = "block_timestamp_type";
         const testValue = "2018-06-15T19:17:48.000";
+        const expected = "B89A6D45";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
         expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
     });
+});
 
-    describe('Name Serialization', () => {
-        let textEncoder = new TextEncoder();
-        let textDecoder = new TextDecoder();
-        let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+describe('Timestamp Deserialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
 
-        /* reset buffer */
-        beforeEach(() => {
-            buffer = new ser.SerialBuffer({
-                textEncoder: textEncoder,
-                textDecoder: textDecoder,
-            });
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
         });
     });
 
+    it('time_point_sec epoch', () => {
+        const type = "time_point_sec";
+        const hex = "00000000";
+        const expected = "1970-01-01T00:00:00.000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('time_point_sec 2018-06-15T19:17:47.000', () => {
+        const type = "time_point_sec";
+        const expected = "2018-06-15T19:17:47.000";
+        const hex = "DB10245B";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point epoch', () => {
+        const type = "time_point";
+        const expected = "1970-01-01T00:00:00.000";
+        const hex = "0000000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point first sec', () => {
+        const type = "time_point";
+        const expected = "1970-01-01T00:00:00.001";
+        const hex = "E803000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point 1970-01-01T00:00:00.002', () => {
+        const type = "time_point";
+        const expected = "1970-01-01T00:00:00.002";
+        const hex = "D007000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point 1970-01-01T00:00:00.010', () => {
+        const type = "time_point";
+        const expected = "1970-01-01T00:00:00.010";
+        const hex = "1027000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point 1970-01-01T00:00:00.100', () => {
+        const type = "time_point";
+        const expected = "1970-01-01T00:00:00.100";
+        const hex = "A086010000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point 2018-06-15T19:17:47.000', () => {
+        const type = "time_point";
+        const expected = "2018-06-15T19:17:47.000";
+        const hex = "C0AC3112B36E0500";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point 2018-06-15T19:17:47.999', () => {
+        const type = "time_point";
+        const expected = "2018-06-15T19:17:47.999";
+        const hex = "18EB4012B36E0500";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check time_point 2060-06-15T19:17:47.999', () => {
+        const type = "time_point";
+        const expected = "2060-06-15T19:17:47.999";
+        const hex = "18CBC45533240A00";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check block_timestamp_type 2000-01-01T00:00:00.000', () => {
+        const type = "block_timestamp_type";
+        const expected = "2000-01-01T00:00:00.000";
+        const hex = "00000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check block_timestamp_type 2000-01-01T00:00:00.500', () => {
+        const type = "block_timestamp_type";
+        const expected = "2000-01-01T00:00:00.500";
+        const hex = "01000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check block_timestamp_type 2000-01-01T00:00:01.000', () => {
+        const type = "block_timestamp_type";
+        const expected = "2000-01-01T00:00:01.000";
+        const hex = "02000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check block_timestamp_type 2018-06-15T19:17:47.500', () => {
+        const type = "block_timestamp_type";
+        const expected = "2018-06-15T19:17:47.500";
+        const hex = "B79A6D45";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check block_timestamp_type 2018-06-15T19:17:48.000', () => {
+        const type = "block_timestamp_type";
+        const expected = "2018-06-15T19:17:48.000";
+        const hex = "B89A6D45";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+});
+
+describe('Name Bytes and String Serialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+
+    it('check empty name', () => {
+        const type = "name";
+        const testValue = "";
+        const expected = "0000000000000000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check name single digit', () => {
+        const expected = "0000000000000008";
+        const type = "name";
+        const testValue = "1";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check name simple', () => {
+        const expected = "000000000090D031";
+        const type = "name";
+        const testValue = "abcd";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('', () => {
+        const expected = "0000004B8184C031";
+        const type = "name";
+        const testValue = "ab.cd.ef";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check name with periods', () => {
+        const expected = "3444004B8184C031";
+        const type = "name";
+        const testValue = "ab.cd.ef.1234";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check name leading trailing dots', () => {
+        const expected = "00C0522021700C00";
+        const type = "name";
+        const testValue = "..ab.cd.ef..";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check sleepy name', () => {
+        const expected = "F0FFFFFFFFFFFFFF";
+        const type = "name";
+        const testValue = "zzzzzzzzzzzz";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check name too long', () => {
+        const expected = "FFFFFFFFFFFFFFFF";
+        const type = "name";
+        const testValue = "zzzzzzzzzzzzz";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check empty byte', () => {
+        const expected = "00";
+        const type = "bytes";
+        const testValue = "";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check zero byte', () => {
+        const expected = "0100";
+        const type = "bytes";
+        const testValue = "00";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check byte long string', () => {
+        const expected = "10AABBCCDDEEFF00010203040506070809";
+        const type = "bytes";
+        const testValue = "AABBCCDDEEFF00010203040506070809";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check empty string', () => {
+        const expected = "00";
+        const type = "string";
+        const testValue = "";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check single char string', () => {
+        const expected = "017A";
+        const type = "string";
+        const testValue = "z";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check longer string', () => {
+        const expected = "1154686973206973206120737472696E672E";
+        const type = "string";
+        const testValue = "This is a string.";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check 128-long string ', () => {
+        const expected = "8201222A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A2A22";
+        const type = "string";
+        const testValue = '"' + '*'.repeat(128) + '"';
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check utf8 string', () => {
+        const expected = "455C75303030302020E8BF99E698AFE4B880E4B8AAE6B58BE8AF952020D0ADD182D0BE20D182D0B5D181D1822020D987D8B0D8A720D8A7D8AED8AAD8A8D8A7D8B120F09F918D";
+        const type = "string";
+        const testValue = "\\u0000  这是一个测试  Это тест  هذا اختبار 👍";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+});
+describe('Checksum Serialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+    it('check checksum160 zero', () => {
+        const expected = "0000000000000000000000000000000000000000";
+        const type = "checksum160";
+        const testValue = "0000000000000000000000000000000000000000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check checksum160 long', () => {
+        const expected = "123456789ABCDEF01234567890ABCDEF70123456";
+        const type = "checksum160";
+        const testValue = "123456789ABCDEF01234567890ABCDEF70123456";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check checksum256 zero', () => {
+        const expected = "0000000000000000000000000000000000000000000000000000000000000000";
+        const type = "checksum256";
+        const testValue = "0000000000000000000000000000000000000000000000000000000000000000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check checksum256 long', () => {
+        const expected = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        const type = "checksum256";
+        const testValue = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check checksum512 zero', () => {
+        const expected = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        const type = "checksum512";
+        const testValue = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check checksum512 long', () => {
+        const expected = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        const type = "checksum512";
+        const testValue = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+});
+describe('Checksum Deserialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+
+    it('check checksum160 zero', () => {
+        const hex = "0000000000000000000000000000000000000000";
+        const type = "checksum160";
+        const expected = "0000000000000000000000000000000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check checksum160 long', () => {
+        const hex = "123456789ABCDEF01234567890ABCDEF70123456";
+        const type = "checksum160";
+        const expected = "123456789ABCDEF01234567890ABCDEF70123456";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check checksum256 zero', () => {
+        const hex = "0000000000000000000000000000000000000000000000000000000000000000";
+        const type = "checksum256";
+        const expected = "0000000000000000000000000000000000000000000000000000000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check checksum256 long', () => {
+        const hex = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        const type = "checksum256";
+        const expected = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check checksum512 zero', () => {
+        const hex = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        const type = "checksum512";
+        const expected = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check checksum512 long', () => {
+        const hex = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        const type = "checksum512";
+        const expected = "0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF0987654321ABCDEF0987654321FFFF1234567890ABCDEF001234567890ABCDEF";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
 });
