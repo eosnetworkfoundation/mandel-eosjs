@@ -345,6 +345,10 @@ export class SerialBuffer { // tslint:disable-line max-classes-per-file
     }
 
     /** Get a `name` */
+    // 13th character of a name must be 'j' or lower
+    // If you try 'zzzzzzzzzzzzz', it maxes out byte array 'FFFFFFFFFFFFFFFF'
+    // The extra bits for 13th 'z' are dropped
+    // turing the last 'z' into an 'j'
     public getName() {
         const a = this.getUint8Array(8);
         let result = '';
@@ -364,6 +368,7 @@ export class SerialBuffer { // tslint:disable-line max-classes-per-file
                 result += '.';
             }
         }
+        // removals all trailing dots
         while (result.endsWith('.')) {
             result = result.substr(0, result.length - 1);
         }
