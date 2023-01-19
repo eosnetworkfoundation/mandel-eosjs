@@ -780,10 +780,13 @@ describe('Name Bytes and String Deserialization', () => {
         const testValue = thisType.deserialize(buffer);
         expect(testValue).toEqual(expected);
     });
+    // this is a weird one.
+    // when you deserialize a name ending with "..."
+    // eosjs-serialize silently drops the trailing dots
     it('check name leading trailing dots', () => {
         const hex = "00C0522021700C00";
         const type = "name";
-        const expected = '..ab.cd.ef..';
+        const expected = '..ab.cd.ef';
         buffer.pushArray(ser.hexToUint8Array(hex));
         const thisType = ser.getType(transactionType, type);
         const testValue = thisType.deserialize(buffer);
@@ -1728,6 +1731,9 @@ describe('Name Bytes and String Serialization', () => {
         expect(hex).toBeTruthy();
         expect(hex).toEqual(expected);
     });
+    // the trailing dots aren't valid
+    // they will be accepted on serialization
+    // they will be truncated on deserialization
     it('check name leading trailing dots', () => {
         const expected = "00C0522021700C00";
         const type = "name";
