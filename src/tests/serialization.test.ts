@@ -1980,3 +1980,228 @@ describe('Checksum Deserialization', () => {
         expect(testValue).toEqual(expected);
     });
 });
+describe('Symbol and Asset Serialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+    it('check symbol_code A', () => {
+        const expected = "4100000000000000";
+        const type = "symbol_code";
+        const testValue = "A";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check symbol_code B', () => {
+        const expected = "4200000000000000";
+        const type = "symbol_code";
+        const testValue = "B";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check symbol_code SYS', () => {
+        const expected = "5359530000000000";
+        const type = "symbol_code";
+        const testValue = "SYS";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check symbol 0,A', () => {
+        const expected = "0041000000000000";
+        const type = "symbol";
+        const testValue = "0,A";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check symbol 1,Z', () => {
+        const expected = "015A000000000000";
+        const type = "symbol";
+        const testValue = "1,Z";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check symbol 4,SYS', () => {
+        const expected = "0453595300000000";
+        const type = "symbol";
+        const testValue = "4,SYS";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset 0 FOO', () => {
+        const expected = "000000000000000000464F4F00000000";
+        const type = "asset";
+        const testValue = "0 FOO";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset 0.0 FOO', () => {
+        const expected = "000000000000000001464F4F00000000";
+        const type = "asset";
+        const testValue = "0.0 FOO";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset 0.00 FOO', () => {
+        const expected = "000000000000000002464F4F00000000";
+        const type = "asset";
+        const testValue = "0.00 FOO";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset 0.000 FOO', () => {
+        const expected = "000000000000000003464F4F00000000";
+        const type = "asset";
+        const testValue = "0.000 FOO";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset 1.2345 SYS', () => {
+        const expected = "39300000000000000453595300000000";
+        const type = "asset";
+        const testValue = "1.2345 SYS";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset -1.2345 SYS', () => {
+        const expected = "C7CFFFFFFFFFFFFF0453595300000000";
+        const type = "asset";
+        const testValue = "-1.2345 SYS";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset[] []', () => {
+        const expected = "00";
+        const type = "asset[]";
+        const testValue: number[] = [];
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset[] ["0 FOO"]', () => {
+        const expected = "01000000000000000000464F4F00000000";
+        const type = "asset[]";
+        const testValue: any[] = ["0 FOO"];
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset[] ["0 FOO","0.000 FOO"]', () => {
+        const expected = "02000000000000000000464F4F00000000000000000000000003464F4F00000000";
+        const type = "asset[]";
+        const testValue: any[] = ["0 FOO","0.000 FOO"];
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset? null', () => {
+        const expected = "00";
+        const type = "asset?";
+        const testValue: any = null;
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check asset? "0.123456 SIX"', () => {
+        const expected = "0140E20100000000000653495800000000";
+        const type = "asset?";
+        const testValue = "0.123456 SIX";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check extended_asset {"quantity":"0 FOO","contract":"bar"}', () => {
+        const expected = "000000000000000000464F4F00000000000000000000AE39";
+        const type = "extended_asset";
+        const testValue = {"quantity":"0 FOO","contract":"bar"};
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check extended_asset {"quantity":"0.123456 SIX","contract":"seven"}', () => {
+        const expected = "40E201000000000006534958000000000000000080A9B6C2";
+        const type = "extended_asset";
+        const testValue = {"quantity":"0.123456 SIX","contract":"seven"};
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+});
+describe('Symbol and Asset Deserialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+    it('check symbol_code A', () => {
+        const hex = "4100000000000000";
+        const type = "symbol_code";
+        const expected = "A";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+});
