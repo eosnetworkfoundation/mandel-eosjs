@@ -498,6 +498,70 @@ describe('Floats and Ints Deserialization', () => {
     });
 });
 
+describe('Float and Int Serialization', () => {
+    let textEncoder = new TextEncoder();
+    let textDecoder = new TextDecoder();
+    let transactionType: Map<string, ser.Type> = ser.getTypesFromAbi(ser.createInitialTypes(), transactionAbi);
+
+    /* reset buffer */
+    beforeEach(() => {
+        buffer = new ser.SerialBuffer({
+            textEncoder: textEncoder,
+            textDecoder: textDecoder,
+        });
+    });
+    it('Deserialize Uint64 Large Number', () => {
+        const expected = "FFFFFFFFFFFFFFFF";
+        const testValue = BigInt(18446744073709551615);
+        const thisType = ser.getType(transactionType, "uint64");
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('Deserialize Big Signed Number', () => {
+        const expected = "A38B82D9A906BDFE";
+        const testValue = -90909090909090909;
+        const thisType = ser.getType(transactionType, "int64");
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check uint8 255', () => {
+        const expected = "FF";
+        const testValue = 255;
+        const type = "uint8";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('Deserialize Float32 Small Number', () => {
+        const expected = "0000003E";
+        const testValue = 0.125;
+        const type = "float32";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('Deserialize Float32 Neg Small Number', () => {
+        // -0.125 in float32
+        // 000000BE
+        const expected = "000000BE";
+        const testValue = -0.125;
+        const type = "float32";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+});
+
 describe('Varint Deserialization', () => {
     let textEncoder = new TextEncoder();
     let textDecoder = new TextDecoder();
@@ -2220,6 +2284,33 @@ describe('Symbol and Asset Deserialization', () => {
         const hex = "4100000000000000";
         const type = "symbol_code";
         const expected = "A";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check asset? "0.123456 SIX"', () => {
+        const hex = "0140E20100000000000653495800000000";
+        const type = "asset?";
+        const expected = "0.123456 SIX";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check extended_asset {"quantity":"0 FOO","contract":"bar"}', () => {
+        const hex = "000000000000000000464F4F00000000000000000000AE39";
+        const type = "extended_asset";
+        const expected = {"quantity":"0 FOO","contract":"bar"};
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
+    it('check symbol 0,A', () => {
+        const hex = "0041000000000000";
+        const type = "symbol";
+        const expected = "0,A";
         buffer.pushArray(ser.hexToUint8Array(hex));
         const thisType = ser.getType(transactionType, type);
         const testValue = thisType.deserialize(buffer);
