@@ -120,9 +120,9 @@ describe('Floats and Ints Deserialization', () => {
         // int value 1 type uint64
         const OneAsDecArray = [1, 0, 0, 0, 0, 0, 0, 0];
         buffer.pushArray(OneAsDecArray);
-        const thisType = ser.getType(transactionType, "uint64");
-        const oneAsSigned64Int = BigInt(thisType.deserialize(buffer));
-        expect(oneAsSigned64Int).toEqual(BigInt(1));
+        // warning this getUint64AsNumber will lose percision
+        const oneAsSigned64Int = buffer.getUint64AsNumber();
+        expect(oneAsSigned64Int).toEqual(1);
     });
 
     it('Deserialize Uint64 Large Number', () => {
@@ -131,8 +131,8 @@ describe('Floats and Ints Deserialization', () => {
         const LargeUint64AsDecArray = [255, 255, 255, 255, 255, 255, 255, 255];
         buffer.pushArray(LargeUint64AsDecArray);
         const thisType = ser.getType(transactionType, "uint64");
-        const LargeUint64 = BigInt(thisType.deserialize(buffer));
-        expect(LargeUint64).toEqual(BigInt(18446744073709551615));
+        const largeUInt64AsString = thisType.deserialize(buffer);
+        expect("18446744073709551615").toEqual(largeUInt64AsString)
     });
 
     it('Deserialize Number Negative One', () => {
@@ -140,8 +140,8 @@ describe('Floats and Ints Deserialization', () => {
         const NegOneAsDecArray = [255, 255, 255, 255, 255, 255, 255, 255];
         buffer.pushArray(NegOneAsDecArray);
         const thisType = ser.getType(transactionType, "int64");
-        const oneAsSigned64Int = BigInt(thisType.deserialize(buffer));
-        expect(oneAsSigned64Int).toEqual(BigInt(-1));
+        const oneAsSigned64Int = thisType.deserialize(buffer);
+        expect("-1").toEqual(oneAsSigned64Int);
     });
 
     it('Deserialize Big Signed Number', () => {
@@ -150,8 +150,8 @@ describe('Floats and Ints Deserialization', () => {
         const BigNegativeNumberAsDecArray = [163, 139, 130, 217, 169, 6, 189, 254];
         buffer.pushArray(BigNegativeNumberAsDecArray);
         const thisType = ser.getType(transactionType, "int64");
-        const largeSigned64Int = BigInt(thisType.deserialize(buffer));
-        expect(largeSigned64Int).toEqual(BigInt(-90909090909090909));
+        const largeSigned64Int = thisType.deserialize(buffer);
+        expect("-90909090909090909").toEqual(largeSigned64Int);
     });
 
     it('Deserialize Float32 Zero', () => {
@@ -160,7 +160,7 @@ describe('Floats and Ints Deserialization', () => {
         buffer.pushArray(float32ZeroAsDecArray);
         const thisType = ser.getType(transactionType, "float32");
         const zero: number = thisType.deserialize(buffer);
-        expect(zero).toEqual(0);
+        expect(0).toEqual(zero);
     });
 
     it('Deserialize Float32 Small Number', () => {
@@ -512,7 +512,7 @@ describe('Float and Int Serialization', () => {
     });
     it('Deserialize Uint64 Large Number', () => {
         const expected = "FFFFFFFFFFFFFFFF";
-        const testValue = BigInt(18446744073709551615);
+        const testValue = "18446744073709551615";
         const thisType = ser.getType(transactionType, "uint64");
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
@@ -521,7 +521,7 @@ describe('Float and Int Serialization', () => {
     });
     it('Deserialize Big Signed Number', () => {
         const expected = "A38B82D9A906BDFE";
-        const testValue = -90909090909090909;
+        const testValue = "-90909090909090909";
         const thisType = ser.getType(transactionType, "int64");
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());

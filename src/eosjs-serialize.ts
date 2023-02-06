@@ -4,7 +4,7 @@
 // copyright defined in eosjs/LICENSE.txt
 
 import * as numeric from './eosjs-numeric';
-import { Abi, BlockTaposInfo, BlockHeaderStateTaposInfo } from './eosjs-rpc-interfaces';
+import {Abi, BlockTaposInfo} from './eosjs-rpc-interfaces';
 
 /** A field in an abi */
 export interface Field {
@@ -842,7 +842,9 @@ export function createInitialTypes(): Map<string, Type> {
             serialize(buffer: SerialBuffer, data: string | number) {
                 buffer.pushArray(numeric.decimalToBinary(8, '' + data));
             },
-            deserialize(buffer: SerialBuffer) { return numeric.binaryToDecimal(buffer.getUint8Array(8)); },
+            deserialize(buffer: SerialBuffer) {
+                return numeric.binaryToDecimal(buffer.getUint8Array(8));
+            },
         }),
         int64: createType({
             name: 'int64',
