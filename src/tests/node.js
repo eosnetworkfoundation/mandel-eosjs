@@ -3,17 +3,19 @@ const { JsSignatureProvider } = require('../../dist/eosjs-jssig');
 const fetch = require('node-fetch');
 const { TextEncoder, TextDecoder } = require('util');
 
-const privateKey = '5JPJoZXizFVi19wHkboX5fwwEU2jZVvtSJpQkQu3uqgNu8LNdQN'; // replace with "bob" account private key
+const privateKey = '5JJBHqug5hX1cH91R5u3oMiA3ncHYW395PPmHQbfUshJikGDCBv';
+const testActor = 'hokieshokies'
+const testRecipient = 'alicetestlio'
 /* new accounts for testing can be created
  * see docs/5.-Testing and Building with DUNE.md
  *      OR  by unlocking a cleos wallet then calling:
  * 1) cleos create key --to-console (copy this privateKey & publicKey)
- * 2) cleos wallet import 
+ * 2) cleos wallet import
  * 3) cleos create account bob publicKey
  * 4) cleos create account alice publicKey
  */
 
-const rpc = new JsonRpc('http://localhost:8888', { fetch });
+const rpc = new JsonRpc('https://jungle4.cryptolions.io/', { fetch });
 const signatureProvider = new JsSignatureProvider([privateKey]);
 const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
 
@@ -22,12 +24,12 @@ const transactWithConfig = async () => await api.transact({
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bobtestlion1',
+            actor: testActor,
             permission: 'active',
         }],
         data: {
-            from: 'bobtestlion1',
-            to: 'alicetestlio',
+            from: testActor,
+            to: testRecipient,
             quantity: '0.0001 EOS',
             memo: '',
         },
@@ -53,31 +55,31 @@ const transactWithoutConfig = async () => {
             account: 'eosio.token',
             name: 'transfer',
             authorization: [{
-                actor: 'bobtestlion1',
+                actor: testActor,
                 permission: 'active',
             }],
             data: {
-                from: 'bobtestlion1',
-                to: 'alicetestlio',
+                from: testActor,
+                to: testRecipient,
                 quantity: '0.0001 EOS',
                 memo: '',
             },
         }]
     });
 };
-    
+
 
 const transactWithoutBroadcast = async () => await api.transact({
   actions: [{
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bobtestlion1',
+            actor: testActor,
             permission: 'active',
         }],
         data: {
-            from: 'bobtestlion1',
-            to: 'alicetestlio',
+            from: testActor,
+            to: testRecipient,
             quantity: '0.0001 EOS',
             memo: '',
         },
@@ -87,19 +89,19 @@ const transactWithoutBroadcast = async () => await api.transact({
     blocksBehind: 3,
     expireSeconds: 30,
 });
-    
+
 
 const transactWithRetry = async () => await api.transact({
   actions: [{
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bobtestlion1',
+            actor: testActor,
             permission: 'active',
         }],
         data: {
-            from: 'bobtestlion1',
-            to: 'alicetestlio',
+            from: testActor,
+            to: testRecipient,
             quantity: '0.0001 EOS',
             memo: '',
         },
@@ -110,18 +112,18 @@ const transactWithRetry = async () => await api.transact({
     expireSeconds: 30,
     retryTrxNumBlocks: 10
 });
-    
+
 const transactWithRetryIrreversible = async () => await api.transact({
   actions: [{
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bobtestlion1',
+            actor: testActor,
             permission: 'active',
         }],
         data: {
-            from: 'bobtestlion1',
-            to: 'alicetestlio',
+            from: testActor,
+            to: testRecipient,
             quantity: '0.0001 EOS',
             memo: '',
         },
@@ -140,18 +142,18 @@ const transactShouldFail = async () => await api.transact({
         account: 'eosio.token',
         name: 'transfer',
         authorization: [{
-            actor: 'bobtestlion1',
+            actor: testActor,
             permission: 'active',
         }],
         data: {
-            from: 'bobtestlion1',
-            to: 'alicetestlio',
+            from: testActor,
+            to: testRecipient,
             quantity: '0.0001 EOS',
             memo: '',
         },
     }]
 });
-  
+
 const rpcShouldFail = async () => await rpc.get_block(-1);
 
 module.exports = {
