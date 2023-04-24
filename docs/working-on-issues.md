@@ -1,4 +1,4 @@
-## Commit Eddicit
+## Commit Etiquette
 We use templates for Issues, Pull Requests to help us keep things simple and clear.
 Commits should be small, frequent with simple messages
 
