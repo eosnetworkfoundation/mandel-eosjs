@@ -9,7 +9,7 @@ import {
     AuthorityProviderArgs,
     BinaryAbi,
 } from './eosjs-api-interfaces'
-import {base64ToBinary, convertLegacyPublicKeys} from './eosjs-numeric'
+import { base64ToBinary, convertLegacyPublicKeys } from './eosjs-numeric'
 import {
     GetAbiResult,
     GetBlockHeaderStateResult,
@@ -20,7 +20,7 @@ import {
     PushTransactionArgs,
     SendTransaction2Args,
 } from './eosjs-rpc-interfaces' // tslint:disable-line
-import {RpcError} from './eosjs-rpcerror'
+import { RpcError } from './eosjs-rpcerror'
 
 function arrayToHex(data: Uint8Array) {
     let result = ''
@@ -44,7 +44,7 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
      */
     constructor(
         endpoint: string,
-        args: {fetch?: (input?: string | Request, init?: RequestInit) => Promise<Response>} = {}
+        args: { fetch?: (input?: string | Request, init?: RequestInit) => Promise<Response> } = {}
     ) {
         this.endpoint = endpoint.replace(/\/$/, '')
         if (args.fetch) {
@@ -80,29 +80,29 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
 
     /** Raw call to `/v1/chain/get_abi` */
     public async get_abi(accountName: string): Promise<GetAbiResult> {
-        return await this.fetch('/v1/chain/get_abi', {account_name: accountName})
+        return await this.fetch('/v1/chain/get_abi', { account_name: accountName })
     }
 
     /** Raw call to `/v1/chain/get_account` */
     public async get_account(accountName: string): Promise<any> {
-        return await this.fetch('/v1/chain/get_account', {account_name: accountName})
+        return await this.fetch('/v1/chain/get_account', { account_name: accountName })
     }
 
     /** Raw call to `/v1/chain/get_block_header_state` */
     public async get_block_header_state(
         blockNumOrId: number | string
     ): Promise<GetBlockHeaderStateResult> {
-        return await this.fetch('/v1/chain/get_block_header_state', {block_num_or_id: blockNumOrId})
+        return await this.fetch('/v1/chain/get_block_header_state', { block_num_or_id: blockNumOrId })
     }
 
     /** Raw call to `/v1/chain/get_block` */
     public async get_block(blockNumOrId: number | string): Promise<GetBlockResult> {
-        return await this.fetch('/v1/chain/get_block', {block_num_or_id: blockNumOrId})
+        return await this.fetch('/v1/chain/get_block', { block_num_or_id: blockNumOrId })
     }
 
     /** Raw call to `/v1/chain/get_code` */
     public async get_code(accountName: string): Promise<GetCodeResult> {
-        return await this.fetch('/v1/chain/get_code', {account_name: accountName})
+        return await this.fetch('/v1/chain/get_code', { account_name: accountName })
     }
 
     /** Raw call to `/v1/chain/get_currency_balance` */
@@ -111,12 +111,12 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
         account: string,
         symbol: string = null
     ): Promise<any> {
-        return await this.fetch('/v1/chain/get_currency_balance', {code, account, symbol})
+        return await this.fetch('/v1/chain/get_currency_balance', { code, account, symbol })
     }
 
     /** Raw call to `/v1/chain/get_currency_stats` */
     public async get_currency_stats(code: string, symbol: string): Promise<any> {
-        return await this.fetch('/v1/chain/get_currency_stats', {code, symbol})
+        return await this.fetch('/v1/chain/get_currency_stats', { code, symbol })
     }
 
     /** Raw call to `/v1/chain/get_info` */
@@ -131,12 +131,12 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
 
     /** Raw call to `/v1/chain/get_producers` */
     public async get_producers(json = true, lowerBound = '', limit = 50): Promise<any> {
-        return await this.fetch('/v1/chain/get_producers', {json, lower_bound: lowerBound, limit})
+        return await this.fetch('/v1/chain/get_producers', { json, lower_bound: lowerBound, limit })
     }
 
     /** Raw call to `/v1/chain/get_raw_code_and_abi` */
     public async get_raw_code_and_abi(accountName: string): Promise<GetRawCodeAndAbiResult> {
-        return await this.fetch('/v1/chain/get_raw_code_and_abi', {account_name: accountName})
+        return await this.fetch('/v1/chain/get_raw_code_and_abi', { account_name: accountName })
     }
 
     /** calls `/v1/chain/get_raw_code_and_abi` and pulls out unneeded raw wasm code */
@@ -144,7 +144,7 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
     public async getRawAbi(accountName: string): Promise<BinaryAbi> {
         const rawCodeAndAbi = await this.get_raw_code_and_abi(accountName)
         const abi = base64ToBinary(rawCodeAndAbi.abi)
-        return {accountName: rawCodeAndAbi.account_name, abi}
+        return { accountName: rawCodeAndAbi.account_name, abi }
     }
 
     /** Raw call to `/v1/chain/get_scheduled_transactions` */
@@ -253,7 +253,7 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
         return_failure_trace,
         retry_trx,
         retry_trx_num_blocks,
-        transaction: {signatures, serializedTransaction, serializedContextFreeData},
+        transaction: { signatures, serializedTransaction, serializedContextFreeData },
     }: SendTransaction2Args): Promise<any> {
         return await this.fetch('/v1/chain/send_transaction2', {
             return_failure_trace,
@@ -270,6 +270,20 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
         })
     }
 
+    /** Send readonly transaction */
+    public async send_readonly_transaction({
+        signatures,
+        serializedTransaction,
+        serializedContextFreeData,
+    }: PushTransactionArgs): Promise<any> {
+        return await this.fetch('/v1/chain/send_readonly_transaction', {
+            signatures,
+            compression: 0,
+            packed_context_free_data: arrayToHex(serializedContextFreeData || new Uint8Array(0)),
+            packed_trx: arrayToHex(serializedTransaction),
+        });
+    }
+
     /** Raw call to `/v1/db_size/get` */
     public async db_size_get() {
         return await this.fetch('/v1/db_size/get', {})
@@ -281,17 +295,17 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
         pos: number = null,
         offset: number = null
     ) {
-        return await this.fetch('/v1/history/get_actions', {account_name: accountName, pos, offset})
+        return await this.fetch('/v1/history/get_actions', { account_name: accountName, pos, offset })
     }
 
     /** Raw call to `/v1/history/get_transaction` */
     public async history_get_transaction(id: string, blockNumHint: number = null) {
-        return await this.fetch('/v1/history/get_transaction', {id, block_num_hint: blockNumHint})
+        return await this.fetch('/v1/history/get_transaction', { id, block_num_hint: blockNumHint })
     }
 
     /** Raw call to `/v1/history/get_key_accounts` */
     public async history_get_key_accounts(publicKey: string) {
-        return await this.fetch('/v1/history/get_key_accounts', {public_key: publicKey})
+        return await this.fetch('/v1/history/get_key_accounts', { public_key: publicKey })
     }
 
     /** Raw call to `/v1/history/get_controlled_accounts` */
