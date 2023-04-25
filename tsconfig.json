@@ -10,6 +10,9 @@
         "declaration": true,
         "downlevelIteration": true,
         "skipLibCheck": true,
+        "paths": {
+            "*": ["./src/types/@custom_encoder_types/*"],
+        },
         "lib": [
             "es2017",
             "dom"
@@ -18,5 +21,6 @@
     "include": [
         "src/**/*.ts",
         "src/**/*.js"
-    ]
+    ],
+    "exclude": ["src/types/@custom_encoder_types"]
 }

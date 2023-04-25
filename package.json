@@ -28,14 +28,14 @@
     "url": "https://github.com/eosnetworkfoundation/mandel-eosjs"
   },
   "dependencies": {
-    "@types/text-encoding": "^0.0.36",
     "bn.js": "5.2.0",
     "elliptic": "6.5.4",
     "eslist": "^1.0.0-beta.1",
     "hash.js": "1.1.7",
     "node-fetch": "2.6.7",
     "pako": "2.0.3",
-    "semver": "^7.3.7"
+    "semver": "^7.3.7",
+    "text-encoder": "^0.0.4"
   },
   "devDependencies": {
     "@cypress/skip-test": "^2.6.1",
@@ -61,7 +61,6 @@
     "none": "^1.0.0",
     "prettier": "2.8.4",
     "rimraf": "^3.0.2",
-    "text-encoding": "^0.7.0",
     "ts-jest": "^26.5.6",
     "ts-loader": "^9.2.3",
     "typedoc": "^0.23.24",

@@ -1,4 +1,4 @@
-import { TextDecoder, TextEncoder } from 'text-encoding';
+import { TextDecoder, TextEncoder } from 'text-encoder';
 import { Api } from '../eosjs-api';
 import { JsonRpc } from '../eosjs-jsonrpc';
 import { JsSignatureProvider } from '../eosjs-jssig';
