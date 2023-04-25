@@ -55,14 +55,14 @@ export const negate = (bignum: Uint8Array): void => {
 };
 
 /**
- * Convert an unsigned decimal number in `s` to a bignum
+ * Convert an unsigned decimal number in `str` to a bignum
  *
  * @param size bignum size (bytes)
  */
-export const decimalToBinary = (size: number, s: string): Uint8Array => {
+export const decimalToBinary = (size: number, str: string): Uint8Array => {
     const result = new Uint8Array(size);
-    for (let i = 0; i < s.length; ++i) {
-        const srcDigit = s.charCodeAt(i);
+    for (let i = 0; i < str.length; ++i) {
+        const srcDigit = str.charCodeAt(i);
         if (srcDigit < '0'.charCodeAt(0) || srcDigit > '9'.charCodeAt(0)) {
             throw new Error('invalid number');
         }
@@ -80,16 +80,16 @@ export const decimalToBinary = (size: number, s: string): Uint8Array => {
 };
 
 /**
- * Convert a signed decimal number in `s` to a bignum
+ * Convert a signed decimal number in `str` to a bignum
  *
  * @param size bignum size (bytes)
  */
-export const signedDecimalToBinary = (size: number, s: string): Uint8Array => {
-    const negative = s[0] === '-';
+export const signedDecimalToBinary = (size: number, str: string): Uint8Array => {
+    const negative = str[0] === '-';
     if (negative) {
-        s = s.substring(1);
+        str = str.substring(1);
     }
-    const result = decimalToBinary(size, s);
+    const result = decimalToBinary(size, str);
     if (negative) {
         negate(result);
         if (!isNegative(result)) {
@@ -138,10 +138,10 @@ export const signedBinaryToDecimal = (bignum: Uint8Array, minDigits = 1): string
     return binaryToDecimal(bignum, minDigits);
 };
 
-const base58ToBinaryVarSize = (s: string): Uint8Array => {
+const base58ToBinaryVarSize = (str: string): Uint8Array => {
     const result = [] as number[];
-    for (let i = 0; i < s.length; ++i) {
-        let carry = base58Map[s.charCodeAt(i)];
+    for (let i = 0; i < str.length; ++i) {
+        let carry = base58Map[str.charCodeAt(i)];
         if (carry < 0) {
             throw new Error('invalid base-58 value');
         }
@@ -154,7 +154,7 @@ const base58ToBinaryVarSize = (s: string): Uint8Array => {
             result.push(carry);
         }
     }
-    for (const ch of s) {
+    for (const ch of str) {
         if (ch === '1') {
             result.push(0);
         } else {
@@ -166,17 +166,17 @@ const base58ToBinaryVarSize = (s: string): Uint8Array => {
 };
 
 /**
- * Convert an unsigned base-58 number in `s` to a bignum
+ * Convert an unsigned base-58 number in `str` to a bignum
  *
  * @param size bignum size (bytes)
  */
-export const base58ToBinary = (size: number, s: string): Uint8Array => {
+export const base58ToBinary = (size: number, str: string): Uint8Array => {
     if (!size) {
-        return base58ToBinaryVarSize(s);
+        return base58ToBinaryVarSize(str);
     }
     const result = new Uint8Array(size);
-    for (let i = 0; i < s.length; ++i) {
-        let carry = base58Map[s.charCodeAt(i)];
+    for (let i = 0; i < str.length; ++i) {
+        let carry = base58Map[str.charCodeAt(i)];
         if (carry < 0) {
             throw new Error('invalid base-58 value');
         }
@@ -223,10 +223,10 @@ export const binaryToBase58 = (bignum: Uint8Array, minDigits = 1): string => {
     return String.fromCharCode(...result);
 };
 
-/** Convert an unsigned base-64 number in `s` to a bignum */
-export const base64ToBinary = (s: string): Uint8Array => {
-    let len = s.length;
-    if ((len & 3) === 1 && s[len - 1] === '=') {
+/** Convert an unsigned base-64 number in `str` to a bignum */
+export const base64ToBinary = (str: string): Uint8Array => {
+    let len = str.length;
+    if ((len & 3) === 1 && str[len - 1] === '=') {
         len -= 1;
     } // fc appends an extra '='
     if ((len & 3) !== 0) {
@@ -234,8 +234,8 @@ export const base64ToBinary = (s: string): Uint8Array => {
     }
     const groups = len >> 2;
     let bytes = groups * 3;
-    if (len > 0 && s[len - 1] === '=') {
-        if (s[len - 2] === '=') {
+    if (len > 0 && str[len - 1] === '=') {
+        if (str[len - 2] === '=') {
             bytes -= 2;
         } else {
             bytes -= 1;
@@ -244,10 +244,10 @@ export const base64ToBinary = (s: string): Uint8Array => {
     const result = new Uint8Array(bytes);
 
     for (let group = 0; group < groups; ++group) {
-        const digit0 = base64Map[s.charCodeAt(group * 4 + 0)];
-        const digit1 = base64Map[s.charCodeAt(group * 4 + 1)];
-        const digit2 = base64Map[s.charCodeAt(group * 4 + 2)];
-        const digit3 = base64Map[s.charCodeAt(group * 4 + 3)];
+        const digit0 = base64Map[str.charCodeAt(group * 4 + 0)];
+        const digit1 = base64Map[str.charCodeAt(group * 4 + 1)];
+        const digit2 = base64Map[str.charCodeAt(group * 4 + 2)];
+        const digit3 = base64Map[str.charCodeAt(group * 4 + 3)];
         result[group * 3 + 0] = (digit0 << 2) | (digit1 >> 4);
         if (group * 3 + 1 < bytes) {
             result[group * 3 + 1] = ((digit1 & 15) << 4) | (digit2 >> 2);
@@ -315,13 +315,13 @@ const keyToString = (key: Key, suffix: string, prefix: string): string => {
     return prefix + binaryToBase58(whole);
 };
 
-/** Convert key in `s` to binary form */
-export const stringToPublicKey = (s: string): Key => {
-    if (typeof s !== 'string') {
+/** Convert key in `str` to binary form */
+export const stringToPublicKey = (str: string): Key => {
+    if (typeof str !== 'string') {
         throw new Error('expected string containing public key');
     }
-    if (s.substring(0, 3) === 'EOS') {
-        const whole = base58ToBinary(publicKeyDataSize + 4, s.substring(3));
+    if (str.substring(0, 3) === 'EOS') {
+        const whole = base58ToBinary(publicKeyDataSize + 4, str.substring(3));
         const key = { type: KeyType.k1, data: new Uint8Array(publicKeyDataSize) };
         for (let i = 0; i < publicKeyDataSize; ++i) {
             key.data[i] = whole[i];
@@ -332,12 +332,12 @@ export const stringToPublicKey = (s: string): Key => {
             throw new Error('checksum doesn\'t match');
         }
         return key;
-    } else if (s.substring(0, 7) === 'PUB_K1_') {
-        return stringToKey(s.substring(7), KeyType.k1, publicKeyDataSize, 'K1');
-    } else if (s.substring(0, 7) === 'PUB_R1_') {
-        return stringToKey(s.substring(7), KeyType.r1, publicKeyDataSize, 'R1');
-    } else if (s.substring(0, 7) === 'PUB_WA_') {
-        return stringToKey(s.substring(7), KeyType.wa, 0, 'WA');
+    } else if (str.substring(0, 7) === 'PUB_K1_') {
+        return stringToKey(str.substring(7), KeyType.k1, publicKeyDataSize, 'K1');
+    } else if (str.substring(0, 7) === 'PUB_R1_') {
+        return stringToKey(str.substring(7), KeyType.r1, publicKeyDataSize, 'R1');
+    } else if (str.substring(0, 7) === 'PUB_WA_') {
+        return stringToKey(str.substring(7), KeyType.wa, 0, 'WA');
     } else {
         throw new Error('unrecognized public key format');
     }
@@ -370,11 +370,11 @@ export const publicKeyToString = (key: Key): string => {
 /** If a key is in the legacy format (`EOS` prefix), then convert it to the new format (`PUB_K1_`).
  * Leaves other formats untouched
  */
-export const convertLegacyPublicKey = (s: string): string => {
-    if (s.substring(0, 3) === 'EOS') {
-        return publicKeyToString(stringToPublicKey(s));
+export const convertLegacyPublicKey = (str: string): string => {
+    if (str.substring(0, 3) === 'EOS') {
+        return publicKeyToString(stringToPublicKey(str));
     }
-    return s;
+    return str;
 };
 
 /** If a key is in the legacy format (`EOS` prefix), then convert it to the new format (`PUB_K1_`).
@@ -384,20 +384,20 @@ export const convertLegacyPublicKeys = (keys: string[]): string[] => {
     return keys.map(convertLegacyPublicKey);
 };
 
-/** Convert key in `s` to binary form */
-export const stringToPrivateKey = (s: string): Key => {
-    if (typeof s !== 'string') {
+/** Convert key in `str` to binary form */
+export const stringToPrivateKey = (str: string): Key => {
+    if (typeof str !== 'string') {
         throw new Error('expected string containing private key');
     }
-    if (s.substring(0, 7) === 'PVT_R1_') {
-        return stringToKey(s.substring(7), KeyType.r1, privateKeyDataSize, 'R1');
-    } else if (s.substring(0, 7) === 'PVT_K1_') {
-        return stringToKey(s.substring(7), KeyType.k1, privateKeyDataSize, 'K1');
+    if (str.substring(0, 7) === 'PVT_R1_') {
+        return stringToKey(str.substring(7), KeyType.r1, privateKeyDataSize, 'R1');
+    } else if (str.substring(0, 7) === 'PVT_K1_') {
+        return stringToKey(str.substring(7), KeyType.k1, privateKeyDataSize, 'K1');
     } else {
         // todo: Verify checksum: sha256(sha256(key.data)).
         //       Not critical since a bad key will fail to produce a
         //       valid signature anyway.
-        const whole = base58ToBinary(privateKeyDataSize + 5, s);
+        const whole = base58ToBinary(privateKeyDataSize + 5, str);
         const key = { type: KeyType.k1, data: new Uint8Array(privateKeyDataSize) };
         if (whole[0] !== 0x80) {
             throw new Error('unrecognized private key type');
@@ -447,17 +447,17 @@ export const privateKeyToString = (key: Key): string => {
     }
 };
 
-/** Convert key in `s` to binary form */
-export const stringToSignature = (s: string): Key => {
-    if (typeof s !== 'string') {
+/** Convert key in `str` to binary form */
+export const stringToSignature = (str: string): Key => {
+    if (typeof str !== 'string') {
         throw new Error('expected string containing signature');
     }
-    if (s.substring(0, 7) === 'SIG_K1_') {
-        return stringToKey(s.substring(7), KeyType.k1, signatureDataSize, 'K1');
-    } else if (s.substring(0, 7) === 'SIG_R1_') {
-        return stringToKey(s.substring(7), KeyType.r1, signatureDataSize, 'R1');
-    } else if (s.substring(0, 7) === 'SIG_WA_') {
-        return stringToKey(s.substring(7), KeyType.wa, 0, 'WA');
+    if (str.substring(0, 7) === 'SIG_K1_') {
+        return stringToKey(str.substring(7), KeyType.k1, signatureDataSize, 'K1');
+    } else if (str.substring(0, 7) === 'SIG_R1_') {
+        return stringToKey(str.substring(7), KeyType.r1, signatureDataSize, 'R1');
+    } else if (str.substring(0, 7) === 'SIG_WA_') {
+        return stringToKey(str.substring(7), KeyType.wa, 0, 'WA');
     } else {
         throw new Error('unrecognized signature format');
     }
