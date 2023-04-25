@@ -87,7 +87,7 @@ export const decimalToBinary = (size: number, s: string): Uint8Array => {
 export const signedDecimalToBinary = (size: number, s: string): Uint8Array => {
     const negative = s[0] === '-';
     if (negative) {
-        s = s.substr(1);
+        s = s.substring(1);
     }
     const result = decimalToBinary(size, s);
     if (negative) {
@@ -320,8 +320,8 @@ export const stringToPublicKey = (s: string): Key => {
     if (typeof s !== 'string') {
         throw new Error('expected string containing public key');
     }
-    if (s.substr(0, 3) === 'EOS') {
-        const whole = base58ToBinary(publicKeyDataSize + 4, s.substr(3));
+    if (s.substring(0, 3) === 'EOS') {
+        const whole = base58ToBinary(publicKeyDataSize + 4, s.substring(3));
         const key = { type: KeyType.k1, data: new Uint8Array(publicKeyDataSize) };
         for (let i = 0; i < publicKeyDataSize; ++i) {
             key.data[i] = whole[i];
@@ -332,12 +332,12 @@ export const stringToPublicKey = (s: string): Key => {
             throw new Error('checksum doesn\'t match');
         }
         return key;
-    } else if (s.substr(0, 7) === 'PUB_K1_') {
-        return stringToKey(s.substr(7), KeyType.k1, publicKeyDataSize, 'K1');
-    } else if (s.substr(0, 7) === 'PUB_R1_') {
-        return stringToKey(s.substr(7), KeyType.r1, publicKeyDataSize, 'R1');
-    } else if (s.substr(0, 7) === 'PUB_WA_') {
-        return stringToKey(s.substr(7), KeyType.wa, 0, 'WA');
+    } else if (s.substring(0, 7) === 'PUB_K1_') {
+        return stringToKey(s.substring(7), KeyType.k1, publicKeyDataSize, 'K1');
+    } else if (s.substring(0, 7) === 'PUB_R1_') {
+        return stringToKey(s.substring(7), KeyType.r1, publicKeyDataSize, 'R1');
+    } else if (s.substring(0, 7) === 'PUB_WA_') {
+        return stringToKey(s.substring(7), KeyType.wa, 0, 'WA');
     } else {
         throw new Error('unrecognized public key format');
     }
@@ -371,7 +371,7 @@ export const publicKeyToString = (key: Key): string => {
  * Leaves other formats untouched
  */
 export const convertLegacyPublicKey = (s: string): string => {
-    if (s.substr(0, 3) === 'EOS') {
+    if (s.substring(0, 3) === 'EOS') {
         return publicKeyToString(stringToPublicKey(s));
     }
     return s;
@@ -389,10 +389,10 @@ export const stringToPrivateKey = (s: string): Key => {
     if (typeof s !== 'string') {
         throw new Error('expected string containing private key');
     }
-    if (s.substr(0, 7) === 'PVT_R1_') {
-        return stringToKey(s.substr(7), KeyType.r1, privateKeyDataSize, 'R1');
-    } else if (s.substr(0, 7) === 'PVT_K1_') {
-        return stringToKey(s.substr(7), KeyType.k1, privateKeyDataSize, 'K1');
+    if (s.substring(0, 7) === 'PVT_R1_') {
+        return stringToKey(s.substring(7), KeyType.r1, privateKeyDataSize, 'R1');
+    } else if (s.substring(0, 7) === 'PVT_K1_') {
+        return stringToKey(s.substring(7), KeyType.k1, privateKeyDataSize, 'K1');
     } else {
         // todo: Verify checksum: sha256(sha256(key.data)).
         //       Not critical since a bad key will fail to produce a
@@ -452,12 +452,12 @@ export const stringToSignature = (s: string): Key => {
     if (typeof s !== 'string') {
         throw new Error('expected string containing signature');
     }
-    if (s.substr(0, 7) === 'SIG_K1_') {
-        return stringToKey(s.substr(7), KeyType.k1, signatureDataSize, 'K1');
-    } else if (s.substr(0, 7) === 'SIG_R1_') {
-        return stringToKey(s.substr(7), KeyType.r1, signatureDataSize, 'R1');
-    } else if (s.substr(0, 7) === 'SIG_WA_') {
-        return stringToKey(s.substr(7), KeyType.wa, 0, 'WA');
+    if (s.substring(0, 7) === 'SIG_K1_') {
+        return stringToKey(s.substring(7), KeyType.k1, signatureDataSize, 'K1');
+    } else if (s.substring(0, 7) === 'SIG_R1_') {
+        return stringToKey(s.substring(7), KeyType.r1, signatureDataSize, 'R1');
+    } else if (s.substring(0, 7) === 'SIG_WA_') {
+        return stringToKey(s.substring(7), KeyType.wa, 0, 'WA');
     } else {
         throw new Error('unrecognized signature format');
     }
