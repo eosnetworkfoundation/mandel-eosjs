@@ -1,4 +1,4 @@
-import {TextDecoder, TextEncoder} from 'text-encoding';
+import {TextDecoder, TextEncoder} from 'util';
 import * as ser from "../eosjs-serialize";
 import {SerialBuffer} from "../eosjs-serialize";
 
