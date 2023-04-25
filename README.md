@@ -14,9 +14,6 @@ Javascript API for integration with EOS-based blockchains.
 
 ### Using with Typescript
 
-In order to get access to the `TextEncoding` and `TextDecoding` types, you need to add `@types/text-encoding` as a dev dependency:
-`npm install --save @types/text-encoding`
-
 If you're using Node (not a browser) then you'll also need to make sure the `dom` lib is referenced in your `tsconfig.json`:
 
 ```
@@ -86,7 +83,7 @@ Importing using commonJS syntax is supported by NodeJS out of the box.
 const { Api, JsonRpc, RpcError } = require('enf-eosjs');
 const fetch = require('node-fetch');                                    // node only; not needed in browsers
 const { TextEncoder, TextDecoder } = require('util');                   // node only; native TextEncoder/Decoder
-const { TextEncoder, TextDecoder } = require('text-encoding');          // React Native, IE11, and Edge Browsers only
+const { TextEncoder, TextDecoder } = require('util');          // React Native, IE11, and Edge Browsers only
 ```
 
 ## Basic Usage
