@@ -74,7 +74,7 @@
                 const currentDate = new Date();
                 const timePlusTen = currentDate.getTime() + 10000;
                 const timeInISOString = (new Date(timePlusTen)).toISOString();
-                const expiration = timeInISOString.substr(0, timeInISOString.length - 1);
+                const expiration = timeInISOString.substring(0, timeInISOString.length - 1);
         
                 return await api.transact({
                     expiration,

@@ -370,7 +370,7 @@ export class SerialBuffer { // tslint:disable-line max-classes-per-file
         }
         // removals all trailing dots
         while (result.endsWith('.')) {
-            result = result.substr(0, result.length - 1);
+            result = result.substring(0, result.length - 1);
         }
         return result;
     }
@@ -447,36 +447,36 @@ export class SerialBuffer { // tslint:disable-line max-classes-per-file
     }
 
     /** Append an asset */
-    public pushAsset(s: string) {
-        if (typeof s !== 'string') {
+    public pushAsset(str: string) {
+        if (typeof str !== 'string') {
             throw new Error('Expected string containing asset');
         }
-        s = s.trim();
+        str = str.trim();
         let pos = 0;
         let amount = '';
         let precision = 0;
-        if (s[pos] === '-') {
+        if (str[pos] === '-') {
             amount += '-';
             ++pos;
         }
         let foundDigit = false;
-        while (pos < s.length && s.charCodeAt(pos) >= '0'.charCodeAt(0) && s.charCodeAt(pos) <= '9'.charCodeAt(0)) {
+        while (pos < str.length && str.charCodeAt(pos) >= '0'.charCodeAt(0) && str.charCodeAt(pos) <= '9'.charCodeAt(0)) {
             foundDigit = true;
-            amount += s[pos];
+            amount += str[pos];
             ++pos;
         }
         if (!foundDigit) {
             throw new Error('Asset must begin with a number');
         }
-        if (s[pos] === '.') {
+        if (str[pos] === '.') {
             ++pos;
-            while (pos < s.length && s.charCodeAt(pos) >= '0'.charCodeAt(0) && s.charCodeAt(pos) <= '9'.charCodeAt(0)) {
-                amount += s[pos];
+            while (pos < str.length && str.charCodeAt(pos) >= '0'.charCodeAt(0) && str.charCodeAt(pos) <= '9'.charCodeAt(0)) {
+                amount += str[pos];
                 ++precision;
                 ++pos;
             }
         }
-        const name = s.substr(pos).trim();
+        const name = str.substring(pos).trim();
         this.pushArray(numeric.signedDecimalToBinary(8, amount));
         this.pushSymbol({ name, precision });
     }
@@ -485,11 +485,12 @@ export class SerialBuffer { // tslint:disable-line max-classes-per-file
     public getAsset() {
         const amount = this.getUint8Array(8);
         const { name, precision } = this.getSymbol();
-        let s = numeric.signedBinaryToDecimal(amount, precision + 1);
+        let decimalString = numeric.signedBinaryToDecimal(amount, precision + 1);
         if (precision) {
-            s = s.substr(0, s.length - precision) + '.' + s.substr(s.length - precision);
+            // precision could be more than length here.
+            decimalString = decimalString.substring(0, decimalString.length - precision) + '.' + decimalString.substring(decimalString.length - precision);
         }
-        return s + ' ' + name;
+        return decimalString + ' ' + name;
     }
 
     /** Append a public key */
@@ -572,8 +573,8 @@ export function dateToTimePoint(date: string) {
 
 /** Convert `time_point` (miliseconds since epoch) to date in ISO format */
 export function timePointToDate(us: number) {
-    const s = (new Date(us / 1000)).toISOString();
-    return s.substr(0, s.length - 1);
+    const isoString = (new Date(us / 1000)).toISOString();
+    return isoString.substring(0, isoString.length - 1);
 }
 
 /** Convert date in ISO format to `time_point_sec` (seconds since epoch) */
@@ -581,10 +582,10 @@ export function dateToTimePointSec(date: string) {
     return Math.round(checkDateParse(date + 'Z') / 1000);
 }
 
-/** Convert `time_point_sec` (seconds since epoch) to to date in ISO format */
+/** Convert `time_point_sec` (seconds since epoch) to date in ISO format and trim the ending "Z" */
 export function timePointSecToDate(sec: number) {
-    const s = (new Date(sec * 1000)).toISOString();
-    return s.substr(0, s.length - 1);
+    const isoString = (new Date(sec * 1000)).toISOString();
+    return isoString.substring(0, isoString.length - 1);
 }
 
 /** Convert date in ISO format to `block_timestamp_type` (half-seconds since a different epoch) */
@@ -594,8 +595,8 @@ export function dateToBlockTimestamp(date: string) {
 
 /** Convert `block_timestamp_type` (half-seconds since a different epoch) to to date in ISO format */
 export function blockTimestampToDate(slot: number) {
-    const s = (new Date(slot * 500 + 946684800000)).toISOString();
-    return s.substr(0, s.length - 1);
+    const isoString = (new Date(slot * 500 + 946684800000)).toISOString();
+    return isoString.substring(0, isoString.length - 1);
 }
 
 /** Convert `string` to `Symbol`. format: `precision,NAME`. */
@@ -635,7 +636,8 @@ export function hexToUint8Array(hex: string) {
     const l = hex.length / 2;
     const result = new Uint8Array(l);
     for (let i = 0; i < l; ++i) {
-        const x = parseInt(hex.substr(i * 2, 2), 16);
+        const start = i * 2;
+        const x = parseInt(hex.substring(start, start + 2), 16);
         if (Number.isNaN(x)) {
             throw new Error('Expected hex string');
         }
@@ -1011,7 +1013,7 @@ export function getType(types: Map<string, Type>, name: string): Type {
     if (name.endsWith('[]')) {
         return createType({
             name,
-            arrayOf: getType(types, name.substr(0, name.length - 2)),
+            arrayOf: getType(types, name.substring(0, name.length - 2)),
             serialize: serializeArray,
             deserialize: deserializeArray,
         });
@@ -1019,7 +1021,7 @@ export function getType(types: Map<string, Type>, name: string): Type {
     if (name.endsWith('?')) {
         return createType({
             name,
-            optionalOf: getType(types, name.substr(0, name.length - 1)),
+            optionalOf: getType(types, name.substring(0, name.length - 1)),
             serialize: serializeOptional,
             deserialize: deserializeOptional,
         });
@@ -1027,7 +1029,7 @@ export function getType(types: Map<string, Type>, name: string): Type {
     if (name.endsWith('$')) {
         return createType({
             name,
-            extensionOf: getType(types, name.substr(0, name.length - 1)),
+            extensionOf: getType(types, name.substring(0, name.length - 1)),
             serialize: serializeExtension,
             deserialize: deserializeExtension,
         });
@@ -1080,14 +1082,14 @@ export function getTypesFromAbi(initialTypes: Map<string, Type>, abi: Abi) {
     return types;
 } // getTypesFromAbi
 
-function reverseHex(h: string) {
-    return h.substr(6, 2) + h.substr(4, 2) + h.substr(2, 2) + h.substr(0, 2);
+function reverseHex(hex: string) {
+    return hex.substring(6, 8) + hex.substring(4, 6) + hex.substring(2, 4) + hex.substring(0, 2);
 }
 
 /** TAPoS: Return transaction fields which reference `refBlock` and expire `expireSeconds` after `timestamp` */
 export function transactionHeader(refBlock: BlockTaposInfo, expireSeconds: number) {
     const timestamp = refBlock.header ? refBlock.header.timestamp : refBlock.timestamp;
-    const prefix = parseInt(reverseHex(refBlock.id.substr(16, 8)), 16);
+    const prefix = parseInt(reverseHex(refBlock.id.substring(16, 24)), 16);
 
     return {
         expiration: timePointSecToDate(dateToTimePointSec(timestamp) + expireSeconds),
