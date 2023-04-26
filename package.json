@@ -50,11 +50,7 @@
     "jest-fetch-mock": "^3.0.3",
     "none": "^1.0.0",
     "prettier": "2.8.4",
-<<<<<<< HEAD
-    "rimraf": "^3.0.2",
-=======
     "text-encoding": "^0.7.0",
->>>>>>> remove-unused-deps
     "ts-jest": "^26.5.6",
     "typedoc": "^0.24.6",
     "typedoc-plugin-markdown": "^3.15.2",
