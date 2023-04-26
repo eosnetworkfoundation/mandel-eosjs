@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.13",
-    "@types/jest": "^29.5.1",
+    "@types/jest": "^26.0.24",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "buffer": "^6.0.3",
@@ -50,7 +50,6 @@
     "jest-extended": "^0.11.5",
     "jest-fetch-mock": "^3.0.3",
     "none": "^1.0.0",
-    "npm": "^9.6.5",
     "prettier": "2.8.4",
     "text-encoding": "^0.7.0",
     "ts-jest": "^26.5.6",
