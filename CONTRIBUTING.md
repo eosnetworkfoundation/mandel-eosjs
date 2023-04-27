@@ -75,11 +75,11 @@ Pull requests are awesome. If you're looking to raise a PR for something which d
 
 ### Testing
 
-EOSJS is used by many libraries across the EOS ecosystem, so proper testing is absolutely essential prior to opening a pull request. This can be done in EOSJS by running `yarn build-production`.  This command will build the distrubution bundles (`yarn build-all`) and test each environment accordingly (`yarn test-all`).
+EOSJS is used by many libraries across the EOS ecosystem, so proper testing is absolutely essential prior to opening a pull request. This can be done in EOSJS by running `npm run build-production`.  This command will build the distribution bundles (`npm run build`) and (`npm run build-web`) and test each environment accordingly (`npm run test-all`).
 
 #### Automated Unit Test Suite
 
-`yarn test` will run through the core functionality of each EOSJS module with Jest.
+`npm run test` will run through the core functionality of each EOSJS module with Jest.
 
 #### Integration Test Suite
 
@@ -87,11 +87,11 @@ Integration tests will only work with a local node running on port 8888 and with
 
 ##### Web Environment
 
-Run `yarn build-web` to create the `dist-web` folder and web distrubution modules then `yarn test-web`.  This will run through the `tests/web.html` file using Cypress to inform you on the command line of any test failures.
+Run `npm run build-web` to create the `dist-web` folder and web distrubution modules then `npm run cypress`.  This will run through the `tests/web.html` file using Cypress to inform you on the command line of any test failures.
 
 ##### NodeJS Environment
 
-Run `yarn build` to build the NPM distribution bundle then run `yarn test-node`.  This will create an out of box node environment with `tests/node.js` then test that environment with Jest and relay the results to the command line.
+Run `npm run build` to build the NPM distribution bundle then run `npm run test-node`.  This will create an out of box node environment with `tests/node.js` then test that environment with Jest and relay the results to the command line.
 
 ### Quality Assurance
 

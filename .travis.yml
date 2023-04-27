@@ -7,13 +7,13 @@ node_js:
   - '16.0.0'
 before_install:
   - npm i -g npm@8.0.0
-  - yarn global add typescript
-  - yarn global add webpack 
+  - npm install -g typescript
+  - npm install -g webpack
 before_script:
   - source ./scripts/is_latest.sh
 script:
-  - yarn run lint
-  - yarn run test
+  - npm run lint
+  - npm run test
 deploy:
   - provider: script
     skip_cleanup: true
