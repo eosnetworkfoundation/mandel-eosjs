@@ -11,6 +11,7 @@
     "test": "jest src/tests/*eosjs*",
     "test-serialization": "jest src/tests/serialization.test.ts",
     "test-node": "jest src/tests/*node*",
+    "debug-node": "jest src/tests/node-debug.test.ts",
     "test-all": "npm run test && npm run test-node && npm run test-serialization && npm run cypress",
     "build": "tsc -p ./tsconfig.json && cp src/ripemd.es5.js dist/ripemd.js",
     "build-web": "webpack --config webpack.prod.js && webpack --config webpack.debug.js",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@types/elliptic": "^6.4.13",
     "@types/jest": "^26.0.24",
+    "@types/node-fetch": "^2.6.3",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.51.0",
     "buffer": "^6.0.3",
