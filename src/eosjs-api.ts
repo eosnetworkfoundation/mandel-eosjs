@@ -237,6 +237,7 @@ export class Api {
      *    * `sign`: sign this transaction?
      *    * `useOldRPC`: use old RPC push_transaction, rather than new RPC send_transaction?
      *    * `useOldSendRPC`: use old RPC /v1/chain/send_transaction, rather than new RPC /v1/chain/send_transaction2?
+     *    * `readOnly`: read only, nothing modified
      *    * `returnFailureTrace`: return partial traces on failed transactions?
      *    * `retryTrxNumBlocks`: request node to retry transaction until in a block of given height, blocking call?
      *    * `retryIrreversible`: request node to retry transaction until it is irreversible or expires, blocking call?
@@ -252,6 +253,7 @@ export class Api {
             expireSeconds,
             useOldRPC = false,
             useOldSendRPC = false,
+            readOnly = false,
             returnFailureTrace = true,
             retryTrxNumBlocks = 0,
             retryIrreversible = false
@@ -262,7 +264,8 @@ export class Api {
             blocksBehind?: number; 
             expireSeconds?: number; 
             useOldRPC?: boolean; 
-            useOldSendRPC?: boolean; 
+            useOldSendRPC?: boolean;
+            readOnly?: boolean;
             returnFailureTrace?: boolean;
             retryTrxNumBlocks?: number;
             retryIrreversible?: boolean;
@@ -279,22 +282,31 @@ export class Api {
         const isRetry = retryIrreversible || retryTrxNumBlocks > 0;
 
         if(isRetry) {
-
             if (!this.server_version_string) {
                 info = await this.rpc.get_info();
                 this.server_version_string = info.server_version_string;
             }
 
             // check if current version bigger than 3.1 release or release candidate
+            // TODO: remove semver replace with own code
             if(semver.lt(this.server_version_string,'v3.1.0-rc1') ) {
                 throw new Error(`Retry transaction feature unavailable for nodeos :${info.server_version_string}`);
             }
             if (useOldRPC || useOldSendRPC) {
                 throw new Error('Retry transaction feature not compatible with old RPC');
             }
+            if (readOnly) {
+                throw new Error('Retry transaction feature not compatible with readonly transaction');
+            }
             if(retryIrreversible && retryTrxNumBlocks > 0) {
                 throw new Error('Must specify retry irreversible or until given block height');
             }
+        }
+
+        if ((useOldRPC || useOldSendRPC) && readOnly) {
+            throw new Error(
+                'old RPC not compatible with readonly transaction, please disable old RPC'
+            )
         }
 
         if (typeof blocksBehind === 'number' && expireSeconds) { // use config fields to generate TAPOS if they exist
@@ -335,17 +347,19 @@ export class Api {
         if (broadcast) {
             if(isRetry) {
                 let params: SendTransaction2Args = {
-                    return_failure_trace: returnFailureTrace, 
+                    return_failure_trace: returnFailureTrace,
                     retry_trx: true,
                     transaction: pushTransactionArgs
                 }
-                if(retryTrxNumBlocks > 0) {
+                if (retryTrxNumBlocks > 0) {
                     params = {
                         ...params,
                         retry_trx_num_blocks: retryTrxNumBlocks
                     }
                 }
                 return this.sendSignedTransaction2(params);
+            } else if(readOnly) {
+                return this.sendReadonlyTransaction(pushTransactionArgs);
             } else if(useOldSendRPC) {
                 return this.sendSignedTransaction(pushTransactionArgs);
             } else if(useOldRPC) {
@@ -402,7 +416,19 @@ export class Api {
                 serializedContextFreeData
             }
         });
+
     }
+
+    public async sendReadonlyTransaction(
+      { signatures, serializedTransaction, serializedContextFreeData }: PushTransactionArgs
+    ): Promise<any> {
+        return this.rpc.send_readonly_transaction({
+            signatures,
+            serializedTransaction,
+            serializedContextFreeData
+        });
+    };
+
 
     // eventually break out into TransactionValidator class
     private hasRequiredTaposFields({ expiration, ref_block_num, ref_block_prefix }: any): boolean {

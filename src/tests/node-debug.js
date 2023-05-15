@@ -15,7 +15,7 @@ const testRecipient = 'alicetestlio'
  * 4) cleos create account alice publicKey
  */
 
-const rpc = new JsonRpc('http://127.0.0.1:8888/', { fetch });
+const rpc = new JsonRpc('https://jungle4.cryptolions.io/', { fetch });
 const signatureProvider = new JsSignatureProvider([privateKey]);
 const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
 
@@ -67,7 +67,6 @@ const transactWithoutConfig = async () => {
         }]
     });
 };
-
 
 const transactWithoutBroadcast = async () => await api.transact({
     actions: [{
@@ -135,6 +134,28 @@ const transactWithRetryIrreversible = async () => await api.transact({
     retryIrreversible: true
 });
 
+const readonlyTransfer = async () => await api.transact({
+    actions: [{
+        account: 'eosio.token',
+        name: 'transfer',
+        authorization: [{
+            actor: testActor,
+            permission: 'active',
+        }],
+        data: {
+            from: testActor,
+            to: testRecipient,
+            quantity: '0.0001 EOS',
+            memo: '',
+        },
+    }]
+}, {
+    broadcast: true,
+    readOnly: true,
+    blocksBehind: 3,
+    expireSeconds: 30,
+});
+
 const broadcastResult = async (signaturesAndPackedTransaction) => await api.pushSignedTransaction(signaturesAndPackedTransaction);
 
 const transactShouldFail = async () => await api.transact({
@@ -162,6 +183,7 @@ module.exports = {
     transactWithoutBroadcast,
     transactWithRetry,
     transactWithRetryIrreversible,
+    readonlyTransfer,
     broadcastResult,
     transactShouldFail,
     rpcShouldFail
