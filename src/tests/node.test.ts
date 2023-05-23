@@ -1,5 +1,8 @@
 const tests = require('./node');
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const sleepToAvoidDuplicatesInSameBlock = true;
+
 describe('Node JS environment', () => {
     let transactionResponse: any;
     let transactionSignatures: any;
@@ -10,7 +13,15 @@ describe('Node JS environment', () => {
         expect(Object.keys(transactionResponse)).toContain('transaction_id');
     });
 
+    it('read only transaction', async () => {
+        transactionSignatures = await tests.readonlyTransfer();
+        expect(Object.keys(transactionSignatures)).toContain('signatures');
+        //expect(Object.keys(transactionSignatures)).toContain('serializedTransaction');
+    });
+
     it('transacts with manually configured TAPOS fields', async () => {
+        // needed for local tests to avoid duplicate transactions in same block
+        if (sleepToAvoidDuplicatesInSameBlock) await sleep(700)
         transactionResponse = await tests.transactWithoutConfig();
         expect(Object.keys(transactionResponse)).toContain('transaction_id');
     }, 10000);
@@ -22,18 +33,24 @@ describe('Node JS environment', () => {
     });
 
     it('broadcasts packed transaction, given valid signatures', async () => {
+        // needed for local tests to avoid duplicate transactions in same block
+        if (sleepToAvoidDuplicatesInSameBlock) await sleep(700)
         transactionSignatures = await tests.transactWithoutBroadcast();
         transactionResponse = await tests.broadcastResult(transactionSignatures);
         expect(Object.keys(transactionResponse)).toContain('transaction_id');
     });
 
     it('retry transaction', async () => {
+        // needed for local tests to avoid duplicate transactions in same block
+        if (sleepToAvoidDuplicatesInSameBlock) await sleep(700)
         transactionSignatures = await tests.transactWithRetry();
         transactionResponse = await tests.broadcastResult(transactionSignatures);
         expect(Object.keys(transactionResponse)).toContain('transaction_id');
     });
 
     it('retry transaction irreversible', async () => {
+        // needed for local tests to avoid duplicate transaction in same block
+        await sleep(700)
         transactionSignatures = await tests.transactWithRetryIrreversible();
         transactionResponse = await tests.broadcastResult(transactionSignatures);
         expect(Object.keys(transactionResponse)).toContain('transaction_id');

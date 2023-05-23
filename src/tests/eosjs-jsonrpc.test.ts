@@ -607,12 +607,7 @@ describe('JSON RPC', () => {
     });
 
     it('calls send_readonly_transaction', async () => {
-        const expPath = '/v1/chain/send_readonly_transaction';
-        const signatures = [
-            'George Washington',
-            'John Hancock',
-            'Abraham Lincoln',
-        ];
+        const expPath = '/v1/chain/send_read_only_transaction';
         const serializedTransaction = new Uint8Array([
             0, 16, 32, 128, 255,
         ]);
@@ -626,12 +621,10 @@ describe('JSON RPC', () => {
             }
         };
         const callParams = {
-            signatures,
             serializedTransaction,
         };
         const expParams = {
             body: JSON.stringify({
-                signatures,
                 compression: 0,
                 packed_context_free_data: '',
                 packed_trx: '00102080ff',

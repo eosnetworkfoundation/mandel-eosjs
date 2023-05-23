@@ -2,6 +2,7 @@ const { JsonRpc, RpcError, Api } = require('../../dist');
 const { JsSignatureProvider } = require('../../dist/eosjs-jssig');
 const fetch = require('node-fetch');
 const { TextEncoder, TextDecoder } = require('util');
+const { TestConfig, TestNet } = require('./TestConfig.ts');
 
 const privateKey = '5JJBHqug5hX1cH91R5u3oMiA3ncHYW395PPmHQbfUshJikGDCBv';
 const testActor = 'hokieshokies'
@@ -15,7 +16,9 @@ const testRecipient = 'alicetestlio'
  * 4) cleos create account alice publicKey
  */
 
-const rpc = new JsonRpc('https://jungle4.cryptolions.io/', { fetch });
+// TestNet.Local or TestNet.Jungle sets endpoint, blocksBehind, and expireSeconds
+const config = new TestConfig(TestNet.Jungle);
+const rpc = new JsonRpc(config.endpoint, { fetch });
 const signatureProvider = new JsSignatureProvider([privateKey]);
 const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
 
@@ -35,8 +38,9 @@ const transactWithConfig = async () => await api.transact({
         },
     }]
 }, {
-    blocksBehind: 3,
-    expireSeconds: 30,
+    blocksBehind: config.blocksBehind,
+    searchBlocksAhead: config.searchBlockAhead,
+    expireSeconds: config.expireSeconds,
 });
 
 const transactWithoutConfig = async () => {
@@ -86,54 +90,96 @@ const transactWithoutBroadcast = async () => await api.transact({
     }]
 }, {
     broadcast: false,
-    blocksBehind: 3,
-    expireSeconds: 30,
+    blocksBehind: config.blocksBehind,
+    searchBlocksAhead: config.searchBlockAhead,
+    expireSeconds: config.expireSeconds,
 });
 
 
-const transactWithRetry = async () => await api.transact({
-  actions: [{
-        account: 'eosio.token',
-        name: 'transfer',
-        authorization: [{
-            actor: testActor,
-            permission: 'active',
-        }],
-        data: {
-            from: testActor,
-            to: testRecipient,
-            quantity: '0.0001 EOS',
-            memo: '',
+const transactWithRetry = async () =>
+    await api.transact(
+        {
+            actions: [
+                {
+                    account: 'eosio.token',
+                    name: 'transfer',
+                    authorization: [
+                        {
+                            actor: testActor,
+                            permission: 'active',
+                        }],
+                    data: {
+                        from: testActor,
+                        to: testRecipient,
+                        quantity: '0.0001 EOS',
+                        memo: '',
+                    },
+                }],
         },
-    }]
-}, {
-    broadcast: false,
-    blocksBehind: 3,
-    expireSeconds: 30,
-    retryTrxNumBlocks: 10
-});
+        {
+            broadcast: false,
+            blocksBehind: config.blocksBehind,
+            searchBlocksAhead: config.searchBlockAhead,
+            expireSeconds: config.expireSeconds,
+            retryTrxNumBlocks: 10,
+        }
+    )
 
-const transactWithRetryIrreversible = async () => await api.transact({
-  actions: [{
-        account: 'eosio.token',
-        name: 'transfer',
-        authorization: [{
-            actor: testActor,
-            permission: 'active',
-        }],
-        data: {
-            from: testActor,
-            to: testRecipient,
-            quantity: '0.0001 EOS',
-            memo: '',
+const transactWithRetryIrreversible = async () =>
+    await api.transact(
+        {
+            actions: [
+                {
+                    account: 'eosio.token',
+                    name: 'transfer',
+                    authorization: [
+                        {
+                            actor: testActor,
+                            permission: 'active',
+                        }],
+                    data: {
+                        from: testActor,
+                        to: testRecipient,
+                        quantity: '0.0001 EOS',
+                        memo: '',
+                    },
+                }],
         },
-    }]
-}, {
-    broadcast: false,
-    blocksBehind: 3,
-    expireSeconds: 30,
-    retryIrreversible: true
-});
+        {
+            broadcast: false,
+            blocksBehind: config.blocksBehind,
+            searchBlocksAhead: config.searchBlockAhead,
+            expireSeconds: config.expireSeconds,
+            retryIrreversible: true,
+        }
+    )
+
+// change this to read
+const readonlyTransfer = async () =>
+    await api.transact(
+        {
+            actions: [
+                {
+                    account: 'hokieshokies.mycontract',
+                    name: 'getvalue',
+                    authorization: [
+                        {
+                            actor: testActor,
+                            permission: 'active',
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            broadcast: true,
+            sign: false,
+            readOnly: true,
+            blocksBehind: config.blocksBehind,
+            searchBlocksAhead: config.searchBlockAhead,
+            expireSeconds: config.expireSeconds,
+        }
+    )
 
 const broadcastResult = async (signaturesAndPackedTransaction) => await api.pushSignedTransaction(signaturesAndPackedTransaction);
 
@@ -162,7 +208,8 @@ module.exports = {
     transactWithoutBroadcast,
     transactWithRetry,
     transactWithRetryIrreversible,
+    readonlyTransfer,
     broadcastResult,
     transactShouldFail,
-    rpcShouldFail
+    rpcShouldFail,
 };
