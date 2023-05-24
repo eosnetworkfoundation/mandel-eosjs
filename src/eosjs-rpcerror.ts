@@ -10,6 +10,7 @@ export class RpcError extends Error {
 
     constructor(json: any) {
         if (json.error && json.error.details && json.error.details.length && json.error.details[0].message) {
+          for (let i=0; i<json.error.details.length; i++) { console.log(json.error.details[i].message)}
             super(json.error.details[0].message);
         } else if (json.processed && json.processed.except && json.processed.except.message) {
             super(json.processed.except.message);

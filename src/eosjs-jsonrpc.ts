@@ -18,7 +18,6 @@ import {
     GetInfoResult,
     GetRawCodeAndAbiResult,
     PushTransactionArgs,
-    ReadOnlyTransactionArgs,
     SendTransaction2Args,
 } from './eosjs-rpc-interfaces' // tslint:disable-line
 import { RpcError } from './eosjs-rpcerror'
@@ -273,13 +272,19 @@ export class JsonRpc implements AuthorityProvider, AbiProvider {
 
     /** Send readonly transaction */
     public async send_readonly_transaction({
+        signatures,
         serializedTransaction,
         serializedContextFreeData,
-    }: ReadOnlyTransactionArgs): Promise<any> {
+    }: PushTransactionArgs): Promise<any> {
         return await this.fetch('/v1/chain/send_read_only_transaction', {
-            compression: 0,
-            packed_context_free_data: arrayToHex(serializedContextFreeData || new Uint8Array(0)),
-            packed_trx: arrayToHex(serializedTransaction),
+            transaction: {
+                signatures,
+                compression: 0,
+                packed_context_free_data: arrayToHex(
+                    serializedContextFreeData || new Uint8Array(0)
+                ),
+                packed_trx: arrayToHex(serializedTransaction),
+            },
         })
     }
 

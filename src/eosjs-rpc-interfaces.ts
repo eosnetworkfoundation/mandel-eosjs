@@ -129,12 +129,6 @@ export interface PushTransactionArgs {
     serializedContextFreeData?: Uint8Array;
 }
 
-/** Arguments for `send_read_only_transaction` */
-export interface ReadOnlyTransactionArgs {
-    serializedTransaction: Uint8Array;
-    serializedContextFreeData?: Uint8Array;
-}
-
 /** Arguments for `send_transaction2` */
 export interface SendTransaction2Args {
     return_failure_trace: boolean,

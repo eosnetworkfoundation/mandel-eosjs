@@ -394,6 +394,7 @@ export class Api {
             ),
             actions: await this.serializeActions(transaction.actions),
         }
+        console.log(`{transaction: ${transaction}}`)
         const serializedTransaction = this.serializeTransaction(transaction)
         const serializedContextFreeData = this.serializeContextFreeData(
             transaction.context_free_data
@@ -404,7 +405,8 @@ export class Api {
             signatures: [],
         }
 
-        if (sign) {
+        // no signature for readonly
+        if (sign && !readOnly) {
             const availableKeys = await this.signatureProvider.getAvailableKeys()
             const requiredKeys = await this.authorityProvider.getRequiredKeys({
                 transaction,
@@ -433,6 +435,7 @@ export class Api {
                 }
                 return this.sendSignedTransaction2(params)
             } else if (readOnly) {
+                // no signature for read only
                 return this.sendReadonlyTransaction(pushTransactionArgs)
             } else if (useOldSendRPC) {
                 return this.sendSignedTransaction(pushTransactionArgs)
@@ -500,9 +503,9 @@ export class Api {
         serializedContextFreeData,
     }: PushTransactionArgs): Promise<any> {
         return this.rpc.send_readonly_transaction({
-                signatures,
-                serializedTransaction,
-                serializedContextFreeData,
+            signatures,
+            serializedTransaction,
+            serializedContextFreeData,
         })
     }
 

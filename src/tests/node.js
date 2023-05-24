@@ -160,20 +160,15 @@ const readonlyTransfer = async () =>
         {
             actions: [
                 {
-                    account: 'hokieshokies.mycontract',
+                    account: testActor,
                     name: 'getvalue',
-                    authorization: [
-                        {
-                            actor: testActor,
-                            permission: 'active',
-                        },
-                    ],
+                    authorization: [],
+                    data: {},
                 },
             ],
         },
         {
             broadcast: true,
-            sign: false,
             readOnly: true,
             blocksBehind: config.blocksBehind,
             searchBlocksAhead: config.searchBlockAhead,
@@ -212,4 +207,5 @@ module.exports = {
     broadcastResult,
     transactShouldFail,
     rpcShouldFail,
+    config,
 };

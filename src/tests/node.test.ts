@@ -1,7 +1,7 @@
 const tests = require('./node');
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const sleepToAvoidDuplicatesInSameBlock = true;
+const sleepToAvoidDuplicatesInSameBlock = tests.config.sleep;
 
 describe('Node JS environment', () => {
     let transactionResponse: any;
@@ -14,9 +14,9 @@ describe('Node JS environment', () => {
     });
 
     it('read only transaction', async () => {
-        transactionSignatures = await tests.readonlyTransfer();
-        expect(Object.keys(transactionSignatures)).toContain('signatures');
-        //expect(Object.keys(transactionSignatures)).toContain('serializedTransaction');
+        transactionResponse = await tests.readonlyTransfer();
+        expect(Object.keys(transactionResponse)).toContain('transaction_id');
+        expect(Object.keys(transactionResponse.processed.receipt)).toContain('cpu_usage_us');
     });
 
     it('transacts with manually configured TAPOS fields', async () => {
