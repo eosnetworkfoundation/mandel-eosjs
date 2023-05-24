@@ -385,7 +385,7 @@ export class Api {
         if (!this.hasRequiredTaposFields(transaction)) {
             throw new Error('Required configuration or TAPOS fields are not present')
         }
-
+        
         const abis: BinaryAbi[] = await this.getTransactionAbis(transaction)
         transaction = {
             ...transaction,
@@ -394,7 +394,6 @@ export class Api {
             ),
             actions: await this.serializeActions(transaction.actions),
         }
-        console.log(`{transaction: ${transaction}}`)
         const serializedTransaction = this.serializeTransaction(transaction)
         const serializedContextFreeData = this.serializeContextFreeData(
             transaction.context_free_data
