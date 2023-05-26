@@ -27,7 +27,7 @@ class TestConfig {
         if (type === TestNet.HomeBrew) {
             this.endpoint = 'http://10.3.0.1:8888'
             this.blocksBehind = 1
-            this.expireSeconds = 30
+            this.expireSeconds = 720
             this.searchBlockAhead = 1
             this.sleep = true
             return
