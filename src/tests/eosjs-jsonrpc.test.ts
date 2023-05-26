@@ -7,6 +7,18 @@ describe('JSON RPC', () => {
     const fetchMock = fetch as any;
     let jsonRpc: JsonRpc;
 
+    const accountName = 'myaccountaaa';
+    const blockNumOrId = 1234;
+    const signatures = [
+        'George Washington',
+        'John Hancock',
+        'Abraham Lincoln',
+    ];
+    const serializedTransaction = new Uint8Array([
+        0, 16, 32, 128, 255,
+    ]);
+
+
     beforeEach(() => {
         fetchMock.resetMocks();
         jsonRpc = new JsonRpc(endpointExtraSlash);
@@ -15,7 +27,6 @@ describe('JSON RPC', () => {
     it('throws error bad status', async () => {
         let actMessage = '';
         const expMessage = 'Not Found';
-        const accountName = 'myaccountaaa';
         const expReturn = { data: '12345', message: expMessage };
 
         fetchMock.once(JSON.stringify(expReturn), { status: 404 });
@@ -34,7 +45,6 @@ describe('JSON RPC', () => {
     it('throws error unprocessed', async () => {
         let actMessage = '';
         const expMessage = 'Not Processed';
-        const accountName = 'myaccountaaa';
         const expReturn = {
             data: '12345',
             processed: {
@@ -58,7 +68,6 @@ describe('JSON RPC', () => {
 
     it('calls provided fetch instead of default', async () => {
         const expPath = '/v1/chain/get_abi';
-        const accountName = 'myaccountaaa';
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -85,7 +94,6 @@ describe('JSON RPC', () => {
 
     it('calls get_abi', async () => {
         const expPath = '/v1/chain/get_abi';
-        const accountName = 'myaccountaaa';
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -104,7 +112,6 @@ describe('JSON RPC', () => {
 
     it('calls get_account', async () => {
         const expPath = '/v1/chain/get_account';
-        const accountName = 'myaccountaaa';
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -123,7 +130,6 @@ describe('JSON RPC', () => {
 
     it('calls get_block_header_state', async () => {
         const expPath = '/v1/chain/get_block_header_state';
-        const blockNumOrId = 1234;
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -142,7 +148,6 @@ describe('JSON RPC', () => {
 
     it('calls get_block', async () => {
         const expPath = '/v1/chain/get_block';
-        const blockNumOrId = 1234;
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -161,7 +166,6 @@ describe('JSON RPC', () => {
 
     it('calls get_code', async () => {
         const expPath = '/v1/chain/get_code';
-        const accountName = 'myaccountaaa';
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -181,9 +185,9 @@ describe('JSON RPC', () => {
     it('calls get_currency_balance with all params', async () => {
         const expPath = '/v1/chain/get_currency_balance';
         const code = 'morse';
-        const account = 'myaccountaaa';
         const symbol = 'EOS';
         const expReturn = { data: '12345' };
+        const account = accountName
         const expParams = {
             body: JSON.stringify({
                 code,
@@ -204,8 +208,8 @@ describe('JSON RPC', () => {
     it('calls get_currency_balance with default params', async () => {
         const expPath = '/v1/chain/get_currency_balance';
         const code = 'morse';
-        const account = 'myaccountaaa';
         const symbol: string = null;
+        const account = accountName
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -325,7 +329,6 @@ describe('JSON RPC', () => {
 
     it('calls get_raw_code_and_abi', async () => {
         const expPath = '/v1/chain/get_raw_code_and_abi';
-        const accountName = 'myaccountaaa';
         const expReturn = { data: '12345' };
         const expParams = {
             body: JSON.stringify({
@@ -538,14 +541,6 @@ describe('JSON RPC', () => {
 
     it('calls push_transaction', async () => {
         const expPath = '/v1/chain/push_transaction';
-        const signatures = [
-            'George Washington',
-            'John Hancock',
-            'Abraham Lincoln',
-        ];
-        const serializedTransaction = new Uint8Array([
-            0, 16, 32, 128, 255,
-        ]);
 
         const limit = 50;
         const expReturn = { data: '12345' };
@@ -573,14 +568,6 @@ describe('JSON RPC', () => {
 
     it('calls send_transaction', async () => {
         const expPath = '/v1/chain/send_transaction';
-        const signatures = [
-            'George Washington',
-            'John Hancock',
-            'Abraham Lincoln',
-        ];
-        const serializedTransaction = new Uint8Array([
-            0, 16, 32, 128, 255,
-        ]);
 
         const limit = 50;
         const expReturn = { data: '12345' };
@@ -606,16 +593,43 @@ describe('JSON RPC', () => {
         expect(fetch).toBeCalledWith(endpoint + expPath, expParams);
     });
 
+    it('calls send_readonly_transaction', async () => {
+        const expPath = '/v1/chain/send_read_only_transaction';
+
+        const limit = 50;
+        const expReturn = {
+            data: '12345',
+            transaction_id: '54321',
+            processed: {
+                block_num: 671823
+            }
+        };
+        const callParams = {
+            signatures,
+            serializedTransaction,
+        };
+        const expParams = {
+            body: JSON.stringify({
+                transaction: {
+                    signatures,
+                    compression: 0,
+                    packed_context_free_data: '',
+                    packed_trx: '00102080ff',
+                }
+            }),
+            method: 'POST',
+        };
+
+        fetchMock.once(JSON.stringify(expReturn));
+
+        const response = await jsonRpc.send_readonly_transaction(callParams);
+
+        expect(response).toEqual(expReturn);
+        expect(fetch).toBeCalledWith(endpoint + expPath, expParams);
+    });
+
     it('calls send_transaction2 irreversible', async () => {
         const expPath = '/v1/chain/send_transaction2';
-        const signatures = [
-            'George Washington',
-            'John Hancock',
-            'Abraham Lincoln',
-        ];
-        const serializedTransaction = new Uint8Array([
-            0, 16, 32, 128, 255,
-        ]);
 
         const expReturn = { data: '12345' };
         const callParams = {
@@ -650,14 +664,6 @@ describe('JSON RPC', () => {
 
     it('calls send_transaction2 10 blocks', async () => {
         const expPath = '/v1/chain/send_transaction2';
-        const signatures = [
-            'George Washington',
-            'John Hancock',
-            'Abraham Lincoln',
-        ];
-        const serializedTransaction = new Uint8Array([
-            0, 16, 32, 128, 255,
-        ]);
 
         const expReturn = { data: '12345' };
         const callParams = {
@@ -710,7 +716,6 @@ describe('JSON RPC', () => {
 
     it('calls history_get_actions with all params', async () => {
         const expPath = '/v1/history/get_actions';
-        const accountName = 'myaccountaaa';
         const pos = 5;
         const offset = 10;
         const expReturn = { data: '12345' };
@@ -733,7 +738,6 @@ describe('JSON RPC', () => {
 
     it('calls history_get_actions with default params', async () => {
         const expPath = '/v1/history/get_actions';
-        const accountName = 'myaccountaaa';
         const pos: number = null;
         const offset: number = null;
         const expReturn = { data: '12345' };
@@ -756,9 +760,10 @@ describe('JSON RPC', () => {
 
     it('calls history_get_transaction with all params', async () => {
         const expPath = '/v1/history/get_transaction';
-        const id = 'myaccountaaa';
+
         const blockNumHint = 20;
         const expReturn = { data: '12345' };
+        const id = accountName
         const expParams = {
             body: JSON.stringify({
                 id,
@@ -777,9 +782,9 @@ describe('JSON RPC', () => {
 
     it('calls history_get_transaction with default params', async () => {
         const expPath = '/v1/history/get_transaction';
-        const id = 'myaccountaaa';
         const blockNumHint: number = null;
         const expReturn = { data: '12345' };
+        const id = accountName
         const expParams = {
             body: JSON.stringify({
                 id,
