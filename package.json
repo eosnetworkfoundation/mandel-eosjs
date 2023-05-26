@@ -31,8 +31,7 @@
     "bn.js": "5.2.0",
     "elliptic": "6.5.4",
     "hash.js": "1.1.7",
-    "node-fetch": "2.6.7",
-    "semver": "^7.3.7"
+    "node-fetch": "2.6.7"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.13",
