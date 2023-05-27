@@ -7,14 +7,7 @@ const { TestConfig, TestNet } = require('./TestConfig.ts');
 const privateKey = '5JJBHqug5hX1cH91R5u3oMiA3ncHYW395PPmHQbfUshJikGDCBv';
 const testActor = 'hokieshokies'
 const testRecipient = 'alicetestlio'
-/* new accounts for testing can be created
- * see docs/5.-Testing and Building with DUNE.md
- *      OR  by unlocking a cleos wallet then calling:
- * 1) cleos create key --to-console (copy this privateKey & publicKey)
- * 2) cleos wallet import
- * 3) cleos create account bob publicKey
- * 4) cleos create account alice publicKey
- */
+/* new accounts for testing can be created */
 
 // TestNet.Local or TestNet.Jungle sets endpoint, blocksBehind, and expireSeconds
 const config = new TestConfig(TestNet.Jungle);

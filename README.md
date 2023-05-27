@@ -82,8 +82,7 @@ Importing using commonJS syntax is supported by NodeJS out of the box.
 ```js
 const { Api, JsonRpc, RpcError } = require('enf-eosjs');
 const fetch = require('node-fetch');                                    // node only; not needed in browsers
-const { TextEncoder, TextDecoder } = require('util');                   // node only; native TextEncoder/Decoder
-const { TextEncoder, TextDecoder } = require('util');          // React Native, IE11, and Edge Browsers only
+const { TextEncoder, TextDecoder } = require('util');                   // native TextEncoder/Decoder
 ```
 
 ## Basic Usage
@@ -117,13 +116,17 @@ const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), te
 
 `transact()` is used to sign and push transactions onto the blockchain with an optional configuration object parameter.  This parameter can override the default value of `broadcast: true`, and can be used to fill TAPOS fields given `blocksBehind` and `expireSeconds`.  Given no configuration options, transactions are expected to be unpacked with TAPOS fields (`expiration`, `ref_block_num`, `ref_block_prefix`) and will automatically be broadcast onto the chain.
 
-With the introduction of Mandel v3.1 the retry transaction feature also adds 5 new optional fields to the configuration object:
+With the introduction of Antelope v3.1 the retry transaction feature also adds 5 new optional fields to the configuration object:
 
 - `useOldRPC`: use old RPC `push_transaction`, rather than new RPC send_transaction
 - `useOldSendRPC`: use old RPC `/v1/chain/send_transaction`, rather than new RPC `/v1/chain/send_transaction2`
 - `returnFailureTrace`: return partial traces on failed transactions
 - `retryTrxNumBlocks`: request node to retry transaction until in a block of given height, blocking call
 - `retryIrreversible`: request node to retry transaction until it is irreversible or expires, blocking call
+
+With the introduction of Antelope v4.0 the read only transaction feature adds a new optional field to the configuration object:
+
+- `readOnly` : send read only transaction, using `/v1/chain/send_read_only_transaction`.
 
 ```js
 (async () => {

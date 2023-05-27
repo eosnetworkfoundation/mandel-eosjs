@@ -5,7 +5,7 @@ using namespace eosio;
 // If you're just learning follow our Getting Started guide here:
 // https://docs.eosnetwork.com/docs/latest/smart-contracts/getting-started/smart_contract_basics
 
-CONTRACT mycontract : public contract {
+CONTRACT simplereadonlycontract : public contract {
    public:
       using contract::contract;
 
