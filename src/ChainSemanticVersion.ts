@@ -45,11 +45,13 @@ export class ChainSemanticVersion {
         return (
             // better then 4 ok!
             versionObject.major > 4 ||
+            (versionObject.major == 4 && versionObject.minor > 0) ||
             // RC versions of v4.0.0 will not work. RC version of other version will work
+            // Treat patch level undefined as patch level 0
             (versionObject.major == 4 &&
                 !(
                     versionObject.minor == 0 &&
-                    versionObject.patch == 0 &&
+                    (versionObject.patch == 0 || versionObject.patch == null) &&
                     this.semverString.hasReleaseCandidate
                 ))
         )
@@ -82,7 +84,7 @@ export class ChainSemanticVersion {
     private getMajorMinorVersion(): MajorMinorPatch {
         const semVersions = this.semverString.version.split('.')
         // expect at least major and minor version
-        if (semVersions.length < 3) {
+        if (semVersions.length < 2) {
             this.semverString.parsingError = true
             return {major: 0, minor: 0}
         }
@@ -91,7 +93,7 @@ export class ChainSemanticVersion {
             this.semverString.parsingError = true
             return {major: 0, minor: 0}
         }
-        let patch = 0
+        let patch = undefined
         if (semVersions.length > 2 && !isNaN(parseInt(semVersions[2]))) {
             patch = parseInt(semVersions[2])
         }

@@ -17,8 +17,9 @@ const version3WithSupport = [
 ]
 const version4NoSupport = ['v4.0.0-rc1', 'v4.0.0-rc2', 'v4.0.0-rc3']
 const version4WithSupport = ['v4.0.0', 'v4.0.1-rc1', 'v4.0.1']
+
 describe('test parse semver string', () => {
-    it('No Version 3 Support', () => {
+    it('Lacks Version 3 Support', () => {
         version3NoSupport.forEach((version) => {
             const thisService = new ChainSemanticVersion(version)
             expect(thisService.supportsLeap3Features()).not.toBeTruthy()
@@ -32,7 +33,7 @@ describe('test parse semver string', () => {
             expect(thisService.supportsLeap4Features()).not.toBeTruthy()
         })
     })
-    it('No Version 4 Support', () => {
+    it('Lacks Version 4 Support', () => {
         version4NoSupport.forEach((version) => {
             const thisService = new ChainSemanticVersion(version)
             expect(thisService.supportsLeap3Features()).toBeTruthy()
@@ -45,5 +46,21 @@ describe('test parse semver string', () => {
             expect(thisService.supportsLeap3Features()).toBeTruthy()
             expect(thisService.supportsLeap4Features()).toBeTruthy()
         })
+    })
+    it('Check V4 No Patch with RC', () => {
+        // check version 4.0 no patch level will pass
+        const thisService = new ChainSemanticVersion('v4.0-rc12')
+        expect(thisService.supportsLeap3Features()).toBeTruthy()
+        expect(thisService.supportsLeap4Features()).not.toBeTruthy()
+    })
+    it('Check V4 No Patch', () => {
+        // check version 4.0 no patch level will pass
+        const thisServiceZero = new ChainSemanticVersion('v4.0')
+        expect(thisServiceZero.supportsLeap3Features()).toBeTruthy()
+        expect(thisServiceZero.supportsLeap4Features()).toBeTruthy()
+        // check version 4.1 no patch level will pass
+        const thisServiceOne = new ChainSemanticVersion('v4.1')
+        expect(thisServiceOne.supportsLeap3Features()).toBeTruthy()
+        expect(thisServiceOne.supportsLeap4Features()).toBeTruthy()
     })
 })
