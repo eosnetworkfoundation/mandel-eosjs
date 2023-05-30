@@ -3,6 +3,7 @@
  */
 // copyright defined in eosjs/LICENSE.txt
 
+import {ChainSemanticVersion} from './ChainSemanticVersion'
 import { AbiProvider, AuthorityProvider, BinaryAbi, CachedAbi, SignatureProvider } from './eosjs-api-interfaces';
 import { JsonRpc } from './eosjs-jsonrpc';
 import {
@@ -17,9 +18,6 @@ import * as ser from './eosjs-serialize';
 
 const abiAbi = require('../src/abi.abi.json');
 const transactionAbi = require('../src/transaction.abi.json');
-
-const semver = require('semver')
-
 
 interface Created {
     timestamp: string;
@@ -323,6 +321,7 @@ export class Api {
     ): Promise<any> {
         let info: GetInfoResult
         let refBlock: BlockTaposInfo
+        let semver: ChainSemanticVersion
 
         if (!this.chainId) {
             info = await this.rpc.get_info()
@@ -330,7 +329,7 @@ export class Api {
                 info.head_block_num - blocksBehind + searchBlocksAhead
             )
             this.chainId = info.chain_id
-            this.server_version_string = info.server_version_string
+            semver = new ChainSemanticVersion(info.server_version_string)
         }
 
         const isRetry = retryIrreversible || retryTrxNumBlocks > 0
@@ -341,12 +340,11 @@ export class Api {
                 refBlock = await this.rpc.get_block_header_state(
                     info.head_block_num - blocksBehind + searchBlocksAhead
                 )
-                this.server_version_string = info.server_version_string
+                semver = new ChainSemanticVersion(info.server_version_string)
             }
 
-            // check if current version bigger than 3.1 release or release candidate
-            // TODO: remove semver replace with own code
-            if (semver.lt(this.server_version_string, 'v3.1.0-rc1')) {
+            // check if chain support 3.0 endpoints
+            if (semver.supportsLeap3Features()) {
                 throw new Error(
                     `Retry transaction feature unavailable for nodeos :${info.server_version_string}`
                 )
@@ -377,6 +375,7 @@ export class Api {
                 refBlock = await this.rpc.get_block_header_state(
                     info.head_block_num - blocksBehind + searchBlocksAhead
                 )
+                semver = new ChainSemanticVersion(info.server_version_string)
             }
 
             transaction = {...ser.transactionHeader(refBlock, expireSeconds), ...transaction}
@@ -385,7 +384,7 @@ export class Api {
         if (!this.hasRequiredTaposFields(transaction)) {
             throw new Error('Required configuration or TAPOS fields are not present')
         }
-        
+
         const abis: BinaryAbi[] = await this.getTransactionAbis(transaction)
         transaction = {
             ...transaction,
@@ -434,6 +433,11 @@ export class Api {
                 }
                 return this.sendSignedTransaction2(params)
             } else if (readOnly) {
+                if (!semver.supportsLeap4Features()) {
+                    throw new Error(
+                        `Read Only transaction feature unavailable for nodeos :${info.server_version_string}`
+                    )
+                }
                 // no signature for read only
                 return this.sendReadonlyTransaction(pushTransactionArgs)
             } else if (useOldSendRPC) {

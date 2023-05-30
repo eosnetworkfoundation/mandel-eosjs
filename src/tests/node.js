@@ -17,7 +17,7 @@ const testRecipient = 'alicetestlio'
  */
 
 // TestNet.Local or TestNet.Jungle sets endpoint, blocksBehind, and expireSeconds
-const config = new TestConfig(TestNet.Jungle);
+const config = new TestConfig(TestNet.HomeBrew);
 const rpc = new JsonRpc(config.endpoint, { fetch });
 const signatureProvider = new JsSignatureProvider([privateKey]);
 const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
