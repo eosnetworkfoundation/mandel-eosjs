@@ -344,7 +344,7 @@ export class Api {
             }
 
             // check if chain support 3.0 endpoints
-            if (semver.supportsLeap3Features()) {
+            if (!semver.supportsLeap3Features()) {
                 throw new Error(
                     `Retry transaction feature unavailable for nodeos :${info.server_version_string}`
                 )

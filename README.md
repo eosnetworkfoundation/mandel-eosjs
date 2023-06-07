@@ -46,7 +46,6 @@ node node_test
 
 import { Api, JsonRpc, RpcError } from 'enf-eosjs';
 import fetch from 'node-fetch'
-import { TextEncoder, TextDecoder } from 'util';
 
 const rpc = new JsonRpc('https://localhost:443', { fetch });
 const api = new Api({ rpc, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
@@ -73,7 +72,7 @@ It best to use a secure well supported secret store. Some examples of providers 
 Importing using ES6 module syntax in the browser is supported if you have a transpiler, such as Babel.
 ```js
 import { Api, JsonRpc, RpcError } from 'enf-eosjs';
-import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';           // development only
+import { JsSignatureProvider } from 'enf-eosjs/dist/eosjs-jssig';           // development only
 ```
 
 ### CommonJS
@@ -82,8 +81,6 @@ Importing using commonJS syntax is supported by NodeJS out of the box.
 ```js
 const { Api, JsonRpc, RpcError } = require('enf-eosjs');
 const fetch = require('node-fetch');                                    // node only; not needed in browsers
-const { TextEncoder, TextDecoder } = require('util');                   // node only; native TextEncoder/Decoder
-const { TextEncoder, TextDecoder } = require('util');          // React Native, IE11, and Edge Browsers only
 ```
 
 ## Basic Usage
@@ -108,7 +105,7 @@ const rpc = new JsonRpc('http://127.0.0.1:8888', { fetch });
 
 ### API
 
-Include textDecoder and textEncoder when using in Node, React Native, IE11 or Edge Browsers.
+No longer need to include textDecoder and textEncoder when using in Node, React Native, IE11 or Edge Browsers.
 ```js
 const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
 ```
@@ -117,7 +114,7 @@ const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), te
 
 `transact()` is used to sign and push transactions onto the blockchain with an optional configuration object parameter.  This parameter can override the default value of `broadcast: true`, and can be used to fill TAPOS fields given `blocksBehind` and `expireSeconds`.  Given no configuration options, transactions are expected to be unpacked with TAPOS fields (`expiration`, `ref_block_num`, `ref_block_prefix`) and will automatically be broadcast onto the chain.
 
-With the introduction of Mandel v3.1 the retry transaction feature also adds 5 new optional fields to the configuration object:
+With the introduction of Leap v3.1 the retry transaction feature also adds 5 new optional fields to the configuration object:
 
 - `useOldRPC`: use old RPC `push_transaction`, rather than new RPC send_transaction
 - `useOldSendRPC`: use old RPC `/v1/chain/send_transaction`, rather than new RPC `/v1/chain/send_transaction2`
@@ -148,6 +145,40 @@ With the introduction of Mandel v3.1 the retry transaction feature also adds 5 n
   });
   console.dir(result);
 })();
+```
+
+### Read Only Transactions 
+Leap 4.0 introduced read only transaction. A read-only transaction does not change the state and is not added into the blockchain. It is useful for users to retrieve complex chain information.
+
+```js
+/*
+ * Read Only transaciton can not modify state
+ * In this example a special read only action in a custom contract is executed
+ * Note the empty fields for authoriziation and data. 
+ */
+const readonlyTransfer = async () =>
+    await api.transact(
+        {
+            actions: [
+                {
+                    account: testActor,
+                    name: 'getvalue',
+                    authorization: [],
+                    data: {},
+                },
+            ],
+        },
+        {
+            broadcast: true,
+            readOnly: true,
+            blocksBehind: 3,
+            expireSeconds: 72,
+        }
+    )
+// execute the read only transaction 
+const transactionReadOnlyResponse = await readonlyTransfer();
+// processed.receipt has status,cpu_usage_us,net_usage_words
+console.log(`Transaction Id ${transactionReadOnlyResponse.transaction_id} CPU Usage ${transactionReadOnlyResponse.processed.receipt.cpu_usage_us}`)
 ```
 
 ### Error handling
