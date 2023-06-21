@@ -844,6 +844,15 @@ describe('Name Bytes and String Deserialization', () => {
         const testValue = thisType.deserialize(buffer);
         expect(testValue).toEqual(expected);
     });
+    it('check name strips numbers greater then 5', () => {
+        const hex = "000000008002D031";
+        const type = "name";
+        const expected = "abc.5";
+        buffer.pushArray(ser.hexToUint8Array(hex));
+        const thisType = ser.getType(transactionType, type);
+        const testValue = thisType.deserialize(buffer);
+        expect(testValue).toEqual(expected);
+    });
     // this is a weird one.
     // when you deserialize a name ending with "..."
     // eosjs-serialize silently drops the trailing dots
@@ -1837,6 +1846,17 @@ describe('Name Bytes and String Serialization', () => {
         const type = "name";
         // 13th character of a name must be 'j' or lower
         const testValue = "zzzzzzzzzzzzj";
+        const thisType = ser.getType(transactionType, type);
+        thisType.serialize(buffer, testValue);
+        const hex = ser.arrayToHex(buffer.asUint8Array());
+        expect(hex).toBeTruthy();
+        expect(hex).toEqual(expected);
+    });
+    it('check number larger then 5', () => {
+        const expected = "000000008002D031";
+        const type = "name";
+        // ok to serialize in but on deserialization will get striped out
+        const testValue = "abc.578";
         const thisType = ser.getType(transactionType, type);
         thisType.serialize(buffer, testValue);
         const hex = ser.arrayToHex(buffer.asUint8Array());
